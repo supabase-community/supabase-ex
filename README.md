@@ -65,6 +65,17 @@ def deps do
 end
 ```
 
+### Debug & Logging
+
+`supabase-ex` follows the [Logger](https://hexdocs.pm/logger) conventions for logging. You can configure the log level and the log backend in your `config.exs`:
+
+```elixir
+config :logger, backends: [{Logger.Backends.Console, :console}]
+config :logger, level: :info
+```
+
+And `supabase-ex` will respect the log level you set.
+
 ### Clients
 
 A `Supabase.Client` holds general information about Supabase, that can be used to intereact with any of the children integrations, for example: `Supabase.Storage` or `Supabase.UI`.
