@@ -2,9 +2,6 @@
 
 Where the magic starts!
 
-> [!WARNING]
-> This project is still in high development, expect breaking changes and unexpected behaviour.
-
 ## Getting Started
 
 ### Examples
@@ -37,7 +34,7 @@ To install the base SDK:
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 0.5"}
+    {:supabase_potion, "~> 0.6"}
   ]
 end
 ```
@@ -50,16 +47,20 @@ Available client services are:
 - [PostgREST](https://github.com/supabase-community/postgres-ex)
 - [Storage](https://github.com/supabase-community/storage-ex)
 - [Auth/GoTrue](https://github.com/supabase-community/auth-ex)
+- [Edge Functions](https://github.com/supabase-community/functions-ex)
+- [Realtime](https://github.com/supabase-community/realtime-ex)
 
-So if you wanna use the Storage and Auth/GoTrue services, your `mix.exs` should look like that:
+So if you wanna use the all the above services, your `mix.exs` should look like that:
 
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 0.5"}, # base SDK
-    {:supabase_storage, "~> 0.3"}, # storage integration
-    {:supabase_gotrue, "~> 0.3"}, # auth integration
-    {:supabase_postgrest, "~> 0.2"}, # postgrest integration
+    {:supabase_potion, "~> 0.6"}, # base SDK
+    {:supabase_storage, "~> 0.4"}, # storage integration
+    {:supabase_gotrue, "~> 0.4"}, # auth integration
+    {:supabase_postgrest, "~> 1.0"}, # postgrest integration
+    {:supabase_functions, "~> 0.1"}, # edge functions integration
+    {:supabase_realtime, "~> 0.1"}, # realtime integration
   ]
 end
 ```
