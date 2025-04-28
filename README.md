@@ -56,13 +56,14 @@ So if you wanna use the Storage and Auth/GoTrue services, your `mix.exs` should 
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 0.5"}, # base SDK
-    {:supabase_storage, "~> 0.3"}, # storage integration
-    {:supabase_gotrue, "~> 0.3"}, # auth integration
-    {:supabase_postgrest, "~> 0.2"}, # postgrest integration
+    {:supabase_potion, "~> 0.6"}, # base SDK
+    {:supabase_storage, "~> 0.4"}, # storage integration
+    {:supabase_gotrue, "~> 0.4"}, # auth integration
+    {:supabase_postgrest, "~> 1.0"}, # postgrest integration
   ]
 end
 ```
+
 
 ### Clients
 
