@@ -108,6 +108,7 @@ defmodule Supabase.Fetcher.Request do
     headers =
       global.headers
       |> Map.put("authorization", "Bearer " <> client.access_token)
+      |> Map.put("apikey", client.api_key)
       |> Map.to_list()
 
     %__MODULE__{client: client, headers: headers}
@@ -133,7 +134,7 @@ defmodule Supabase.Fetcher.Request do
   @doc """
   Attaches a custom body decoder to be called after a successfull response.
   The body decoder should implement the `Supabase.Fetcher.BodyDecoder` behaviour, and it default
-  to the `Supabase.Fetcher.JSONDecoder`, or it can be a 2-arity function that will follow the `Supabase.Fetcher.BodyDecoder.decode/1` callback interface.
+  to the `Supabase.Fetcher.JSONDecoder`, or it can be a 2-arity function that will follow the `Supabase.Fetcher.BodyDecoder.decode` callback interface.
 
   You can pass `nil` as the decoder to avoid body decoding, if you need the raw body.
   """
