@@ -34,7 +34,6 @@ defmodule UserManagementWeb.Router do
         {UserManagementWeb.UserAuth, :redirect_if_user_is_authenticated}
       ] do
       live "/login", LoginLive, :new
-      live "/register", RegistrationLive, :new
     end
 
     post "/login", SessionController, :create
