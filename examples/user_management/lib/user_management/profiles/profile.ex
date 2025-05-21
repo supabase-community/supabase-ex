@@ -5,12 +5,11 @@ defmodule UserManagement.Profiles.Profile do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "profiles" do
-    field :user_id, :binary_id
     field :username, :string
     field :website, :string
     field :avatar_url, :string
 
-    timestamps()
+    timestamps(inserted_at: false)
   end
 
   @doc false

@@ -21,7 +21,7 @@ defmodule UserManagementWeb.Router do
   ## Authentication routes
   scope "/", UserManagementWeb do
     pipe_through [:browser, :require_authenticated_user]
-    
+
     live "/profile", ProfileLive, :index
     delete "/logout", SessionController, :delete
   end
@@ -34,10 +34,10 @@ defmodule UserManagementWeb.Router do
         {UserManagementWeb.UserAuth, :mount_current_user},
         {UserManagementWeb.UserAuth, :redirect_if_user_is_authenticated}
       ] do
-      live "/login", LoginLive, :new
+      live "/", LoginLive, :new
     end
 
-    post "/login", SessionController, :create
-    post "/login/:token", SessionController, :token
+    post "/", SessionController, :create
+    post "/:token", SessionController, :token
   end
 end

@@ -2,7 +2,7 @@ defmodule UserManagementWeb.ProfileLive do
   use UserManagementWeb, :live_view
 
   alias UserManagement.Profiles
-  alias UserManagement.Profiles.Profile
+  alias Supabase.Storage
 
   @impl true
   def mount(_params, _session, socket) do
@@ -34,10 +34,11 @@ defmodule UserManagementWeb.ProfileLive do
        |> assign(:form, to_form(changeset))
        |> assign(:page_title, "Profile")
        |> assign(:avatar_url, profile.avatar_url)
-       |> allow_upload(:avatar, 
-          accept: ~w(.jpg .jpeg .png), 
-          max_entries: 1,
-          max_file_size: 5_000_000)}
+       |> allow_upload(:avatar,
+         accept: ~w(.jpg .jpeg .png),
+         max_entries: 1,
+         max_file_size: 5_000_000
+       )}
     else
       {:ok, socket}
     end
@@ -82,26 +83,32 @@ defmodule UserManagementWeb.ProfileLive do
       consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
         file_name = "#{socket.assigns.current_user.id}-#{entry.client_name}"
         file_type = entry.client_type
-        
+
         # Upload file to Supabase storage in the avatars bucket
         file = File.read!(path)
-        
-        case Supabase.Storage.from(client, "avatars")
-             |> Supabase.Storage.upload(file_name, file, content_type: file_type) do
-          {:ok, data} ->
-            file_path = "avatars/#{file_name}"
-            
+
+        # Create a temporary file and upload it
+        temp_path = Path.join(System.tmp_dir(), file_name)
+        File.write!(temp_path, file)
+
+        # Upload the file to Supabase
+        case Storage.from(client, "avatars")
+             |> Storage.File.upload(temp_path, file_name, %{content_type: file_type}) do
+          {:ok, %{path: _path}} ->
+            # Clean up temporary file
+            File.rm!(temp_path)
+
             # Get public URL
-            {:ok, %{"publicUrl" => public_url}} = 
-              Supabase.Storage.from(client, "avatars")
-              |> Supabase.Storage.get_public_url(file_name)
-              
+            {:ok, public_url} =
+              Storage.from(client, "avatars")
+              |> Storage.File.get_public_url(file_name)
+
             # Update profile with avatar URL
-            {:ok, _profile} = 
+            {:ok, _profile} =
               Profiles.update_profile(socket.assigns.profile, %{"avatar_url" => public_url})
-              
+
             {:ok, public_url}
-            
+
           {:error, error} ->
             {:error, error}
         end
@@ -109,13 +116,13 @@ defmodule UserManagementWeb.ProfileLive do
 
     case uploaded_files do
       [url] ->
-        {:noreply, 
-         socket 
+        {:noreply,
+         socket
          |> assign(:avatar_url, url)
          |> put_flash(:info, "Avatar updated successfully")}
-        
+
       _ ->
-        {:noreply, 
+        {:noreply,
          socket
          |> put_flash(:error, "Failed to upload avatar")}
     end
@@ -124,90 +131,82 @@ defmodule UserManagementWeb.ProfileLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm space-y-10">
-      <.header class="text-center">
-        User Profile
-        <:subtitle>
-          Manage your profile information
-        </:subtitle>
-      </.header>
+    <div class="form-widget">
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center;">
+          <div>
+            <%= if @avatar_url do %>
+              <img
+                src={@avatar_url}
+                alt="Avatar"
+                class="avatar image"
+                style="height: 10em; width: 10em;"
+              />
+            <% else %>
+              <div class="avatar no-image" style="height: 10em; width: 10em;" />
+            <% end %>
+          </div>
 
-      <.simple_form for={@form} id="profile-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:username]} type="text" label="Username" required />
-        <.input field={@form[:website]} type="url" label="Website" placeholder="https://example.com" />
-        
-        <div class="mt-4 mb-6">
-          <label class="block text-sm font-semibold leading-6 text-zinc-800">Avatar</label>
-          <div class="mt-2 flex items-center gap-4">
-            <img 
-              :if={@avatar_url} 
-              src={@avatar_url} 
-              alt="Avatar"
-              class="h-16 w-16 rounded-full object-cover"
+          <div style="width: 10em; position: relative; margin-left: 1rem;">
+            <.live_file_input
+              upload={@uploads.avatar}
+              style="position: absolute; visibility: hidden;"
+              id="avatar-input"
             />
-            <img 
-              :if={!@avatar_url} 
-              src="/images/placeholder-avatar.png" 
-              alt="Default Avatar"
-              class="h-16 w-16 rounded-full object-cover"
-            />
-            
-            <div class="flex-1">
-              <.live_file_input upload={@uploads.avatar} class="hidden" id="avatar-input" />
-              <div class="flex space-x-2">
-                <button 
-                  type="button" 
-                  phx-click={JS.dispatch("click", to: "#avatar-input")}
-                  class="rounded-lg bg-zinc-200 px-3 py-2 text-sm font-semibold leading-6 text-zinc-900 hover:bg-zinc-300"
-                >
-                  Choose File
-                </button>
-                <button
-                  :if={Enum.any?(@uploads.avatar.entries)}
-                  type="button"
-                  phx-click="upload-avatar"
-                  class="rounded-lg bg-brand px-3 py-2 text-sm font-semibold leading-6 text-white hover:bg-brand/90"
-                >
-                  Upload
-                </button>
-              </div>
-              
-              <div :if={Enum.any?(@uploads.avatar.entries)} class="mt-2">
-                <%= for entry <- @uploads.avatar.entries do %>
-                  <div class="flex items-center space-x-2">
-                    <div class="text-sm"><%= entry.client_name %></div>
-                    <button
-                      type="button"
-                      phx-click="cancel-upload"
-                      phx-value-ref={entry.ref}
-                      class="text-red-500 text-xs"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  
-                  <.live_img_preview entry={entry} class="mt-2 h-16 w-16 rounded-full object-cover" />
-                  
-                  <%= for err <- upload_errors(@uploads.avatar, entry) do %>
-                    <div class="text-red-500 text-xs"><%= error_to_string(err) %></div>
-                  <% end %>
-                <% end %>
-              </div>
-              
-              <%= for err <- upload_errors(@uploads.avatar) do %>
-                <div class="text-red-500 text-xs"><%= error_to_string(err) %></div>
-              <% end %>
-            </div>
+            <label class="button primary block" for="avatar-input">
+              {if Enum.any?(@uploads.avatar.entries), do: "Uploading...", else: "Upload"}
+            </label>
+
+            <button
+              :if={Enum.any?(@uploads.avatar.entries)}
+              type="button"
+              phx-click="upload-avatar"
+              class="button primary block"
+              style="margin-top: 0.5rem;"
+            >
+              Save Avatar
+            </button>
           </div>
         </div>
-        
+
+        <div :if={Enum.any?(@uploads.avatar.entries)} style="margin-top: 1rem;">
+          <%= for entry <- @uploads.avatar.entries do %>
+            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+              <span style="margin-right: 0.5rem;">{entry.client_name}</span>
+              <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}>
+                &times;
+              </button>
+            </div>
+
+            <.live_img_preview entry={entry} class="avatar image" style="height: 5em; width: 5em;" />
+
+            <%= for err <- upload_errors(@uploads.avatar, entry) do %>
+              <div style="color: red; font-size: 0.8rem;">{error_to_string(err)}</div>
+            <% end %>
+          <% end %>
+        </div>
+
+        <%= for err <- upload_errors(@uploads.avatar) do %>
+          <div style="color: red; font-size: 0.8rem;">{error_to_string(err)}</div>
+        <% end %>
+      </div>
+
+      <.simple_form for={@form} id="profile-form" phx-change="validate" phx-submit="save">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="text" value={@current_user.email} disabled />
+        </div>
+
+        <.input field={@form[:username]} type="text" label="Name" />
+        <.input field={@form[:website]} type="url" label="Website" />
+
         <:actions>
-          <.button class="w-full">Save Profile</.button>
+          <.button class="primary block">Update</.button>
         </:actions>
       </.simple_form>
 
-      <div class="mt-10 text-center">
-        <.link href={~p"/logout"} method="delete" class="text-sm font-semibold text-red-600 hover:underline">
+      <div>
+        <.link href={~p"/logout"} method="delete" class="button block">
           Sign Out
         </.link>
       </div>

@@ -1,18 +1,4 @@
-<header class="bg-white shadow-sm py-4">
-  <div class="container mx-auto px-4 flex items-center justify-between">
-    <div class="flex items-center">
-      <a href="/" class="text-xl font-bold text-gray-900">
-        Supabase User Management
-      </a>
-    </div>
-    <div class="flex items-center gap-4">
-      <a href={~p"/login"} class="text-gray-700 hover:text-gray-900">
-        Login
-      </a>
-    </div>
-  </div>
-</header>
-<main class="container mx-auto px-4 py-8">
+<main class="container">
   <.flash_group flash={@flash} />
   {@inner_content}
 </main>

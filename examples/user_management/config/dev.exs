@@ -4,8 +4,9 @@ import Config
 config :user_management, UserManagement.Repo,
   username: "postgres",
   password: "postgres",
-  hostname: "localhost",
-  database: "user_management_dev",
+  hostname: "127.0.0.1",
+  port: 54322,
+  database: "postgres",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -25,8 +26,7 @@ config :user_management, UserManagementWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "qPuV8P5jtLUGTkjfVLst2MXrzCUI9r+8dBrkdngvVM64mVzuPnVLSphbFIlpNaR/",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:user_management, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:user_management, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:user_management, ~w(--sourcemap=inline --watch)]}
   ]
 
 # ## SSL Support

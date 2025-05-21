@@ -20,7 +20,7 @@ defmodule UserManagementWeb.SessionController do
       _ ->
         conn
         |> put_flash(:error, "Invalid credentials")
-        |> redirect(to: ~p"/login")
+        |> redirect(to: ~p"/")
     end
   end
 

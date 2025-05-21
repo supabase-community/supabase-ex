@@ -1,7 +1,7 @@
 project_id = "examples-user-management"
 
 [api]
-enabled = true
+enabled = false
 port = 54321
 schemas = ["public", "storage", "auth"]
 
@@ -28,5 +28,6 @@ enable_confirmations = false
 [storage]
 file_size_limit = "50MiB"
 
-[local.meta]
-schemas = ["public", "storage", "auth", "extensions"]
+[inbucket]
+enabled = true
+port = 54324

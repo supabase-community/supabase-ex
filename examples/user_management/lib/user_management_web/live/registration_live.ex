@@ -9,7 +9,7 @@ defmodule UserManagementWeb.RegistrationLive do
         Register
         <:subtitle>
           Already have an account?
-          <.link navigate={~p"/login"} class="font-semibold text-brand hover:underline">
+          <.link navigate={~p"/"} class="font-semibold text-brand hover:underline">
             Sign in
           </.link>
           to your account now.
@@ -58,7 +58,7 @@ defmodule UserManagementWeb.RegistrationLive do
         {:noreply,
          socket
          |> put_flash(:info, "User created successfully. Please sign in.")
-         |> push_navigate(to: ~p"/login")}
+         |> push_navigate(to: ~p"/")}
 
       {:error, %Supabase.Error{metadata: metadata}} ->
         message = get_in(metadata, [:resp_body, "msg"])
