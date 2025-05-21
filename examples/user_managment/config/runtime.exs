@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :user_management, UserManagementWeb.Endpoint, server: true
 end
 
+config :user_management, UserManagement.Supabase,
+  base_url: System.fetch_env!("SUPABASE_URL"),
+  api_key: System.fetch_env!("SUPABASE_KEY")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

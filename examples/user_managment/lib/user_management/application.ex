@@ -15,7 +15,8 @@ defmodule UserManagement.Application do
       # Start a worker by calling: UserManagement.Worker.start_link(arg)
       # {UserManagement.Worker, arg},
       # Start to serve requests, typically the last entry
-      UserManagementWeb.Endpoint
+      UserManagementWeb.Endpoint,
+      UserManagement.Supabase
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
