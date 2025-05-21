@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperação de Senha</title>
+</head>
+
+<body>
+  <main>
+    <div class="email-content">
+      <h2>Olá!</h2>
+      <p>Acesse o link abaixo:</p>
+      <a href="{{ .SiteURL }}/confirmar?token_hash={{ .TokenHash }}&type=signup">
+        {{ .SiteURL }}/confirmar?token_hash={{ .TokenHash }}&type=signup
+      </a>
+      <p>Se você não faz parte da instituição, ignore este email.</p>
+    </div>
+  </main>
+</body>
+
+</html>
