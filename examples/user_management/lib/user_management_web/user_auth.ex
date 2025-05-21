@@ -248,7 +248,7 @@ defmodule UserManagementWeb.UserAuth do
 
   defp maybe_store_return_to(conn), do: conn
 
-  defp signed_in_path(), do: ~p"/"
+  defp signed_in_path(), do: ~p"/profile"
 
   def get_client, do: UserManagement.Supabase.get_client()
 end
