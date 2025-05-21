@@ -3,3 +3,131 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+/* Custom styles for user management app */
+.container {
+  margin: 0 auto;
+  max-width: 500px;
+  padding: 50px 20px;
+}
+
+.avatar {
+  border-radius: 50%;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.avatar.image {
+  object-fit: cover;
+  height: 10rem;
+  width: 10rem;
+}
+
+.form-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-widget .button {
+  align-self: flex-end;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  width: 100%;
+  padding-right: 80px;
+}
+
+.password-input .button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+.button {
+  display: inline-block;
+  text-align: center;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  background-color: #3b82f6;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #2563eb;
+}
+
+.button.block {
+  display: block;
+  width: 100%;
+}
+
+.button.primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.button.primary:hover {
+  background-color: #2563eb;
+}
+
+.button.secondary {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.button.secondary:hover {
+  background-color: #d1d5db;
+}
+
+.button.danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.button.danger:hover {
+  background-color: #dc2626;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  display: block;
+}
