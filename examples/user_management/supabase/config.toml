@@ -1,0 +1,32 @@
+project_id = "examples-user-management"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "auth"]
+
+[db]
+port = 54322
+shadow_port = 54320
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://localhost:54321"
+
+[auth]
+site_url = "http://localhost:4000"
+additional_redirect_urls = ["https://localhost:4000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[storage]
+file_size_limit = "50MiB"
+
+[local.meta]
+schemas = ["public", "storage", "auth", "extensions"]
