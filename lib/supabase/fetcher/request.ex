@@ -108,6 +108,7 @@ defmodule Supabase.Fetcher.Request do
     headers =
       global.headers
       |> Map.put("authorization", "Bearer " <> client.access_token)
+      |> Map.put("apikey", client.api_key)
       |> Map.to_list()
 
     %__MODULE__{client: client, headers: headers}
