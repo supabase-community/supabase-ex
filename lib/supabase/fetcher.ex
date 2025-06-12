@@ -241,8 +241,8 @@ defmodule Supabase.Fetcher do
         when response: Response.t(),
              context: Request.t()
   defp handle_response({:ok, %Response{} = resp}, %Request{} = builder) do
-    decode_body? = builder.options[:decode_body?] || true
-    parse_http_err? = builder.options[:parse_http_error?] || true
+    decode_body? = Keyword.get(builder.options, :decode_body?, true)
+    parse_http_err? = Keyword.get(builder.options, :parse_http_error?, true)
     http_error_parser = builder.error_parser
     decoder = builder.body_decoder
     decoder_opts = builder.body_decoder_opts
