@@ -1,9 +1,4 @@
-# Supabase Potion
-
-Where the magic starts!
-
-> [!WARNING]
-> This project is still in high development, expect breaking changes and unexpected behaviour.
+# Supabase
 
 ## Getting Started
 
@@ -37,7 +32,7 @@ To install the base SDK:
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 0.5"}
+    {:supabase_potion, "~> 0.6"}
   ]
 end
 ```
@@ -68,23 +63,6 @@ end
 ### Clients
 
 A `Supabase.Client` holds general information about Supabase, that can be used to intereact with any of the children integrations, for example: `Supabase.Storage` or `Supabase.UI`.
-
-`Supabase.Client` is defined as:
-
-- `:base_url` - The base url of the Supabase API, it is usually in the form `https://<app-name>.supabase.io`.
-- `:api_key` - The API key used to authenticate requests to the Supabase API.
-- `:access_token` - Token with specific permissions to access the Supabase API, it is usually the same as the API key.
-- `:db` - default database options
-    - `:schema` - default schema to use, defaults to `"public"`
-- `:global` - global options config
-    - `:headers` - additional headers to use on each request
-- `:auth` - authentication options
-    - `:auto_refresh_token` - automatically refresh the token when it expires, defaults to `true`
-    - `:debug` - enable debug mode, defaults to `false`
-    - `:detect_session_in_url` - detect session in URL, defaults to `true`
-    - `:flow_type` - authentication flow type, defaults to `"web"`
-    - `:persist_session` - persist session, defaults to `true`
-    - `:storage_key` - storage key
 
 ### Usage
 
