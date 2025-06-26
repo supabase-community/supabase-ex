@@ -17,7 +17,7 @@ defmodule Supabase.Fetcher.Adapter.FinchTest do
      client: client,
      builder:
        client
-       |> Request.new()
+       |> Request.new(decode_body?: true, parse_http_error?: true)
        |> Request.with_http_client(@mock)
        |> Request.with_method(:get)
        |> Request.with_database_url("/films")}
