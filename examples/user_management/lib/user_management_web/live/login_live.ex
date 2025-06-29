@@ -42,7 +42,7 @@ defmodule UserManagementWeb.LoginLive do
     {:ok, client} = UserManagementWeb.UserAuth.get_client()
 
     case Supabase.GoTrue.sign_in_with_otp(client, %{email: email}) do
-      {:ok, _result} ->
+      :ok ->
         {:noreply,
          socket
          |> assign(loading: false)
