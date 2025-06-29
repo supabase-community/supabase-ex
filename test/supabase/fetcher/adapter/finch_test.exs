@@ -8,6 +8,8 @@ defmodule Supabase.Fetcher.Adapter.FinchTest do
   alias Supabase.Fetcher.Request
   alias Supabase.Fetcher.Response
 
+  @moduletag capture_log: true
+
   @mock Supabase.TestHTTPAdapter
 
   setup do
