@@ -35,6 +35,14 @@ defmodule UserManagementWeb.UserAuth do
     end
   end
 
+  @doc "Verifies an OTP token and logs the user in.\n" <> @extra_login_doc
+  def verify_otp_and_log_in(conn, params) do
+    with {:ok, client} <- get_client(),
+         {:ok, session} <- GoTrue.verify_otp(client, params) do
+      do_login(conn, session, params)
+    end
+  end
+
   defp do_login(conn, session, params) do
     user_return_to = get_session(conn, :user_return_to)
 
@@ -42,14 +50,15 @@ defmodule UserManagementWeb.UserAuth do
     |> renew_session()
     |> put_token_in_session(session.access_token)
     |> maybe_write_remember_me_cookie(session, params)
+    |> fetch_current_user([])
     |> redirect(to: user_return_to || signed_in_path())
   end
 
-  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
-    put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
+  defp maybe_write_remember_me_cookie(conn, session, %{"remember_me" => "true"}) do
+    put_resp_cookie(conn, @remember_me_cookie, session.access_token, @remember_me_options)
   end
 
-  defp maybe_write_remember_me_cookie(conn, _token, _params) do
+  defp maybe_write_remember_me_cookie(conn, _session, _params) do
     conn
   end
 
@@ -248,7 +257,7 @@ defmodule UserManagementWeb.UserAuth do
 
   defp maybe_store_return_to(conn), do: conn
 
-  defp signed_in_path(), do: ~p"/profile"
+  defp signed_in_path(), do: ~p"/"
 
-  def get_client, do: UserManagement.Supabase.get_client()
+  def get_client, do: Elixir.UserManagement.Supabase.get_client()
 end

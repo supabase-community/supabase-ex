@@ -42,7 +42,7 @@ defmodule UserManagement.MixProject do
       {:floki, ">= 0.30.0", only: :test},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:supabase_potion, "~> 0.6"},
-      {:supabase_gotrue, github: "supabase-community/auth-ex", branch: "fix/31"},
+      {:supabase_gotrue, github: "supabase-community/auth-ex", branch: "fix/31", rev: "bf2cd9d"},
       {:supabase_storage, "~> 0.4"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
