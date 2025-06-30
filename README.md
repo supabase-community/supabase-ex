@@ -1,57 +1,6 @@
-# Supabase Potion
+# Supabase Elixir
 
-Where the magic starts!
-
-> [!WARNING]
-> This project is still in high development, expect breaking changes and unexpected behaviour.
-
-## Getting Started
-
-### Examples
-
-This repository contains a few examples with sample apps to help you get started and showcase each usage of the client implementations:
-
-#### Gotrue/Auth examples
-
-TODO
-
-<!--
-- [Plug based auth](https://github.com/zoedsoupe/supabase-ex/tree/main/examples/auth/plug)
-- [Phoenix LiveView based auth](https://github.com/zoedsoupe/supabase-ex/tree/main/examples/auth/phoenix_live_view)
-- [User management](https://github.com/zoedsoupe/supabase-ex/tree/main/examples/auth/user_management)
--->
-
-#### Storage examples
-
-TODO
-
-<!--
-- [Plug based upload](https://github.com/zoedsoupe/supabase-ex/tree/main/examples/storage/plug)
-- [Phoenix LiveView upload](https://github.com/zoedsoupe/supabase-ex/tree/main/examples/storage/phoenix_live_view)
--->
-
-### Installation
-
-To install the base SDK:
-
-```elixir
-def deps do
-  [
-    {:supabase_potion, "~> 0.5"}
-  ]
-end
-```
-
-### General usage
-
-This library per si is the base foundation to user Supabase services from Elixir, so to integrate with specific services you need to add each client library you want to use.
-
-Available client services are:
-- [PostgREST](https://github.com/supabase-community/postgres-ex)
-- [Storage](https://github.com/supabase-community/storage-ex)
-- [Auth/GoTrue](https://github.com/supabase-community/auth-ex)
-
-So if you wanna use the Storage and Auth/GoTrue services, your `mix.exs` should look like that:
+Supabase Community Elixir SDK
 
 ```elixir
 def deps do
@@ -64,6 +13,11 @@ def deps do
 end
 ```
 
+Individual product client documentation:
+
+- [PostgREST](https://github.com/supabase-community/postgres-ex)
+- [Storage](https://github.com/supabase-community/storage-ex)
+- [Auth](https://github.com/supabase-community/auth-ex)
 
 ### Clients
 
@@ -112,36 +66,9 @@ iex> Supabase.init_client("https://<supabase-url>", "<supabase-api-key>",
 iex> {:ok, %Supabase.Client{}}
 ```
 
-> Note that one off clients are just raw elixir structs and therefore don't manage any state
+Initialized clients are elixir structs without any managed state.
 
-For more information on the available options, see the [Supabase.Client](https://hexdocs.pm/supabase_potion/Supabase.Client.html) module documentation.
-
-> There's also a bang version of `Supabase.init_client/3` that will raise an error if the client can't be created.
-
-You can also define a module that will centralize the client initialization:
-
-```elixir
-defmodule MyApp.Supabase.Client do
-  @behaviour Supabase.Client.Behaviour
-
-  @impl true
-  def init do
-    # your client initialization
-    # you should return {:ok, client} or {:error, reason}
-    # you probably want to use `Supabase.init_client/3` here
-    # but get the base_url and api_key from anywhere you want
-  end
-
-  @impl true
-  def get_client do
-    # your client retrieval
-    # you should return the client
-    # the management of the client state is up to you
-  end
-end
-```
-
-For self managed clients, check the [next section](#self-managed-clients).
+You can also implement the `Supabase.Client.Behaviour` callbacks to cntralize client init logic.
 
 #### Self managed clients
 
@@ -194,49 +121,9 @@ defmodule MyApp.Application do
 end
 ```
 
-> Of course, you can spawn as many clients you wanna, with different configurations if you need
-
-Now you can interact with the client process:
+To interact with the client process:
 
 ```elixir
-iex> {:ok, %Supabase.Client{} = client} = MyApp.Supabase.Client.get_client()
+iex> {:ok, client} = MyApp.Supabase.Client.get_client()
 iex> Supabase.GoTrue.sign_in_with_password(client, email: "", password: "")
 ```
-
-You can also update the `access_token` for it:
-
-```elixir
-iex> {:ok, %Supabase.Client{} = client} = MyApp.Supabase.Client.get_client()
-iex> client.access_token == client.api_key
-iex> :ok = MyApp.Supabase.Client.set_auth("new-access-token")
-iex> {:ok, %Supabase.Client{} = client} = MyApp.Supabase.Client.get_client()
-iex> client.access_token == "new-access-token"
-```
-
-For more examples on how to use the client, check clients implementations docs:
-- [Supabase.GoTrue](https://hexdocs.pm/supabase_gotrue)
-- [Supabase.Storage](https://hexdocs.pm/supabase_storage)
-- [Supabase.PostgREST](https://hexdocs.pm/supabase_postgrest)
-
-### How to find my Supabase base URL?
-
-You can find your Supabase base URL in the Settings page of your project.
-Firstly select your project from the initial Dashboard.
-On the left sidebar, click on the Settings icon, then select API.
-The base URL is the first field on the page.
-
-### How to find my Supabase API Key?
-
-You can find your Supabase API key in the Settings page of your project.
-Firstly select your project from the initial Dashboard.
-On the left sidebar, click on the Settings icon, then select API.
-The API key is the second field on the page.
-
-There two types of API keys, the public and the private. The last one
-bypass any Row Level Security (RLS) rules you have set up.
-So you shouldn't use it in your frontend application.
-
-If you don't know what RLS is, you can read more about it here:
-https://supabase.com/docs/guides/auth/row-level-security
-
-For most cases you should prefer to use the public "anon" Key.
