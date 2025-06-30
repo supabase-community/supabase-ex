@@ -18,7 +18,7 @@ defmodule UserManagement.Profiles do
   Gets a single profile by user_id.
   """
   def get_profile_by_user_id(user_id) do
-    Repo.get_by(Profile, user_id: user_id)
+    Repo.get_by(Profile, id: user_id)
   end
 
   @doc """

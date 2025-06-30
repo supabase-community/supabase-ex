@@ -7,25 +7,7 @@ defmodule UserManagementWeb.ProfileLive do
   @impl true
   def mount(_params, _session, socket) do
     if user = socket.assigns.current_user do
-      profile =
-        case Profiles.get_profile_by_user_id(user.id) do
-          nil ->
-            # Create profile if it doesn't exist yet
-            email = user.email || "user-#{user.id}"
-            username = email |> String.split("@") |> hd() |> String.replace(~r/[^a-zA-Z0-9]/, "")
-
-            {:ok, profile} =
-              Profiles.create_profile(%{
-                "user_id" => user.id,
-                "username" => username
-              })
-
-            profile
-
-          profile ->
-            profile
-        end
-
+      profile = Profiles.get_profile_by_user_id(user.id)
       changeset = Profiles.change_profile(profile)
 
       {:ok,

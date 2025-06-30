@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset your password</title>
+</head>
+<body>
+  <main>
+    <div class="email-content">
+      <h2>Reset your password</h2>
+      <p>Follow this link to reset the password for your account:</p>
+      <a href="http://localhost:4000/sessions/token?token_hash={{ .TokenHash }}&type=recovery">
+        Reset password
+      </a>
+      <p>Or enter the recovery code: <strong>{{ .Token }}</strong></p>
+      <p>If you didn't request this email, you can safely ignore it.</p>
+    </div>
+  </main>
+</body>
+</html>

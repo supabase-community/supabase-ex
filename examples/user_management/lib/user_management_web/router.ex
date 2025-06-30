@@ -22,14 +22,21 @@ defmodule UserManagementWeb.Router do
   scope "/", UserManagementWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/profile", ProfileLive, :index
+    live_session :authenticated,
+      on_mount: [
+        {UserManagementWeb.UserAuth, :mount_current_user},
+        {UserManagementWeb.UserAuth, :ensure_authenticated}
+      ] do
+      live "/profile", ProfileLive, :index
+    end
+
     delete "/logout", SessionController, :delete
   end
 
   scope "/", UserManagementWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
-    live_session :current_user,
+    live_session :non_authenticated,
       on_mount: [
         {UserManagementWeb.UserAuth, :mount_current_user},
         {UserManagementWeb.UserAuth, :redirect_if_user_is_authenticated}
@@ -39,5 +46,6 @@ defmodule UserManagementWeb.Router do
 
     post "/", SessionController, :create
     post "/:token", SessionController, :token
+    get "/sessions/token", SessionController, :token
   end
 end

@@ -2,7 +2,7 @@ defmodule UserManagement.Profiles.Profile do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key {:id, :binary_id, autogenerate: true}
+  @primary_key {:id, :binary_id, autogenerate: false}
   @foreign_key_type :binary_id
   schema "profiles" do
     field :username, :string
@@ -15,10 +15,11 @@ defmodule UserManagement.Profiles.Profile do
   @doc false
   def changeset(profile, attrs) do
     profile
-    |> cast(attrs, [:user_id, :username, :website, :avatar_url])
-    |> validate_required([:user_id])
-    |> unique_constraint(:user_id)
+    |> cast(attrs, [:id, :username, :website, :avatar_url])
+    |> validate_required([:id])
+    |> unique_constraint(:id)
     |> unique_constraint(:username)
+    |> foreign_key_constraint(:id)
     |> validate_format(:website, ~r/^https?:\/\//, message: "must start with http:// or https://")
   end
 
