@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Link</title>
+</head>
+<body>
+  <main>
+    <div class="email-content">
+      <h2>Hello!</h2>
+      <p>Click the link below to sign in:</p>
+      <a href="http://localhost:4000/sessions/token?token_hash={{ .TokenHash }}&type=magiclink">
+        Sign in to your account
+      </a>
+      <p>If you need to enter a code manually, use: <strong>{{ .Token }}</strong></p>
+      <p>If you didn't request this email, you can safely ignore it.</p>
+    </div>
+  </main>
+</body>
+</html>

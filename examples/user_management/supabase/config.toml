@@ -1,0 +1,49 @@
+project_id = "examples-user-management"
+
+[api]
+enabled = false
+port = 54321
+schemas = ["public", "storage", "auth"]
+
+[db]
+port = 54322
+shadow_port = 54320
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://localhost:54321"
+
+[auth]
+site_url = "http://localhost:4000"
+additional_redirect_urls = ["https://localhost:4000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.email.template.invite]
+subject = "You have been invited"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your signup"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your Magic Link"
+content_path = "./supabase/templates/magic_link.html"
+
+[storage]
+file_size_limit = "50MiB"
+
+[inbucket]
+enabled = true
+port = 54324
