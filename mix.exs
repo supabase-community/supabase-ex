@@ -8,7 +8,7 @@ defmodule Supabase.MixProject do
     [
       app: :supabase_potion,
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
@@ -32,11 +32,11 @@ defmodule Supabase.MixProject do
   defp deps do
     [
       {:mime, "~> 2.0"},
-      {:finch, "~> 0.16"},
+      {:finch, "~> 0.18"},
       {:ecto, "~> 3.10"},
       {:jason, "~> 1.4", optional: true},
       {:mox, "~> 1.2", only: :test},
-      {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev, :test], runtime: false}
     ]
