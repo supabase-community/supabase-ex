@@ -273,7 +273,7 @@ defmodule Supabase.Fetcher do
     {:error,
      %{err | metadata: metadata}
      |> tap(
-       &Logger.debug("""
+       &Logger.error("""
        [#{__MODULE__}]: Error response while processing request. #{inspect(&1)}
        """)
      )}
