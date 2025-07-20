@@ -33,8 +33,8 @@ defmodule Supabase.MixProject do
     [
       {:mime, "~> 2.0"},
       {:finch, "~> 0.16"},
-      {:jason, "~> 1.4"},
       {:ecto, "~> 3.10"},
+      {:jason, "~> 1.4", optional: true},
       {:mox, "~> 1.2", only: :test},
       {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
