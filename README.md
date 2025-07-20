@@ -9,6 +9,8 @@ def deps do
     {:supabase_storage, "~> 0.4"}, # storage integration
     {:supabase_gotrue, "~> 0.4"}, # auth integration
     {:supabase_postgrest, "~> 1.0"}, # postgrest integration
+    {:supabase_functions, "~> 0.1"}, # edge functions integration
+    {:supabase_realtime, "~> 0.1"}, # realtime integration
   ]
 end
 ```
