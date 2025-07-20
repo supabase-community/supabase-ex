@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Recovery</title>
+</head>
+
+<body>
+  <main>
+    <div class="email-content">
+      <h2>Hello!</h2>
+      <p>Check the link below:</p>
+      <a href="{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=signup">
+        {{ .SiteURL }}?token_hash={{ .TokenHash }}&type=signup
+      </a>
+    </div>
+  </main>
+</body>
+
+</html>

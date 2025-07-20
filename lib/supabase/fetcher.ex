@@ -137,6 +137,8 @@ defmodule Supabase.Fetcher do
   alias Supabase.Fetcher.Response
   alias Supabase.Fetcher.ResponseAdapter
 
+  require Logger
+
   @behaviour Supabase.Fetcher.Behaviour
 
   @typedoc "Generic typespec to define possible response values, adapt to each client"
@@ -267,7 +269,14 @@ defmodule Supabase.Fetcher do
   defp handle_response({:error, %Error{} = err}, %Request{} = builder) do
     metadata = Error.make_default_http_metadata(builder)
     metadata = Map.merge(metadata, err.metadata)
-    {:error, %{err | metadata: metadata}}
+
+    {:error,
+     %{err | metadata: metadata}
+     |> tap(
+       &Logger.error("""
+       [#{__MODULE__}]: Error response while processing request. #{inspect(&1)}
+       """)
+     )}
   end
 
   defp handle_response({:error, err}, %Request{} = builder) do
@@ -278,6 +287,11 @@ defmodule Supabase.Fetcher do
        code: :unexpected,
        service: builder.service,
        metadata: Map.put(metadata, :raw_error, err)
+     )
+     |> tap(
+       &Logger.debug("""
+       [#{__MODULE__}]: Unexpected error while processing request. #{inspect(&1)}
+       """)
      )}
   end
 
@@ -292,6 +306,11 @@ defmodule Supabase.Fetcher do
        message: message,
        service: builder.service,
        metadata: %{stacktrace: stacktrace, exception: exception}
+     )
+     |> tap(
+       &Logger.error("""
+       [#{__MODULE__}]: Exception raised while processing request. #{inspect(&1)}
+       """)
      )}
   end
 

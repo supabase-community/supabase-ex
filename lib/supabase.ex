@@ -165,4 +165,9 @@ defmodule Supabase do
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
+
+  @doc "Returns the configured JSON encoding library for Supabase libraries."
+  def json_library do
+    Application.get_env(:supabase, :json_library, Jason)
+  end
 end

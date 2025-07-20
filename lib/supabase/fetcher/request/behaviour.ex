@@ -14,7 +14,7 @@ defmodule Supabase.Fetcher.Request.Behaviour do
   @callback with_http_client(Request.t(), adapter :: module) :: Request.t()
   @callback with_query(Request.t(), query :: Enumerable.t()) :: Request.t()
   @callback with_body(Request.t(), body) :: Request.t()
-            when body: Jason.Encoder.t() | {:stream, Enumerable.t()} | nil
+            when body: term | {:stream, Enumerable.t()} | nil
   @callback with_headers(Request.t(), headers) :: Request.t()
             when headers: Supabase.Fetcher.headers()
   @callback with_body_decoder(Request.t(), decoder, decoder_opts) :: Request.t()
