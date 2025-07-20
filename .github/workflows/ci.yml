@@ -74,6 +74,7 @@ jobs:
         run: mix clean
 
       - name: Check code formatting
+        if: matrix.elixir != '1.16'
         run: mix format --check-formatted
 
       - name: Run Credo
