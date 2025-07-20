@@ -24,7 +24,7 @@ config :user_management, UserManagement.Supabase,
   base_url: System.fetch_env!("SUPABASE_URL"),
   api_key: System.fetch_env!("SUPABASE_KEY")
 
-config :supabase_gotrue, auth_module: UserManagementWeb.Auth
+config :supabase_auth, auth_module: UserManagementWeb.Auth
 
 if config_env() == :prod do
   database_url =

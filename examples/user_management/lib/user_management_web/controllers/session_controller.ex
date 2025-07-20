@@ -16,11 +16,11 @@ defmodule UserManagementWeb.SessionController do
       _ ->
         conn
         |> put_flash(:error, "Invalid credentials")
-        |> redirect(to: ~p"/login")
+        |> redirect(to: ~p"/")
     end
   end
 
-  def token(conn, params) do
+  def token(conn, %{} = params) do
     create(conn, %{"user" => params})
   end
 
@@ -35,8 +35,7 @@ defmodule UserManagementWeb.SessionController do
     UserManagementWeb.UserAuth.verify_otp_and_log_in(conn, %{token_hash: token, type: type})
   end
 
-  def log_in_with_strategy(conn, %{"user" => %{"token" => token}})
-      when is_binary(token) do
-    UserManagementWeb.UserAuth.log_in_user_with_otp(conn, %{"token" => token})
+  def log_in_with_strategy(conn, %{"user" => %{} = params}) do
+    UserManagementWeb.UserAuth.log_in_user_with_otp(conn, params)
   end
 end

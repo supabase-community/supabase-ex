@@ -4,10 +4,10 @@ defmodule UserManagementWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Supabase.GoTrue
-  alias Supabase.GoTrue.Admin
-  alias Supabase.GoTrue.Session
-  alias Supabase.GoTrue.User
+  alias Supabase.Auth
+  alias Supabase.Auth.Admin
+  alias Supabase.Auth.Session
+  alias Supabase.Auth.User
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -30,7 +30,7 @@ defmodule UserManagementWeb.UserAuth do
   @doc "Logs the User in using the otp strategy.\n" <> @extra_login_doc
   def log_in_user_with_otp(conn, params \\ %{}) do
     with {:ok, client} <- get_client(),
-         {:ok, session} <- GoTrue.sign_in_with_otp(client, params) do
+         {:ok, session} <- Auth.sign_in_with_otp(client, params) do
       do_login(conn, session, params)
     end
   end
@@ -38,7 +38,7 @@ defmodule UserManagementWeb.UserAuth do
   @doc "Verifies an OTP token and logs the user in.\n" <> @extra_login_doc
   def verify_otp_and_log_in(conn, params) do
     with {:ok, client} <- get_client(),
-         {:ok, session} <- GoTrue.verify_otp(client, params) do
+         {:ok, session} <- Auth.verify_otp(client, params) do
       do_login(conn, session, params)
     end
   end
@@ -116,7 +116,7 @@ defmodule UserManagementWeb.UserAuth do
   defp fetch_user_from_session_token(user_token) do
     {:ok, client} = get_client()
 
-    case GoTrue.get_user(client, %Session{access_token: user_token}) do
+    case Auth.get_user(client, %Session{access_token: user_token}) do
       {:ok, %User{} = user} -> user
       _ -> nil
     end
@@ -211,7 +211,7 @@ defmodule UserManagementWeb.UserAuth do
   defp maybe_get_current_user(session) do
     {:ok, client} = get_client()
 
-    case GoTrue.get_user(client, session) do
+    case Auth.get_user(client, session) do
       {:ok, %User{} = user} -> user
       _ -> nil
     end

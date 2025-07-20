@@ -4,60 +4,96 @@ defmodule UserManagementWeb.LoginLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="row flex flex-center">
-      <div class="col-6">
-        <.header>
-          Supabase + Phoenix
-          <:subtitle>
-            Sign in via magic link with your email below
-          </:subtitle>
-        </.header>
+    <div class="mx-auto max-w-sm space-y-4">
+      <.header class="text-center">
+        <p>Log in</p>
+        <:subtitle>
+          Don't have an account?
+          <.link navigate={~p"/register"} class="font-semibold text-brand hover:underline">
+            Sign up
+          </.link>
+          for an account now.
+        </:subtitle>
+      </.header>
 
-        <.simple_form for={@form} id="login_form" phx-submit="send_magic_link" as={:user}>
-          <.input field={@form[:email]} type="email" placeholder="Your email" required />
-          <:actions>
-            <.button class="block" phx-disable-with="Loading...">
-              {if @loading, do: "Loading", else: "Send magic link"}
-            </.button>
-          </:actions>
-        </.simple_form>
+      <.login_form :for={s <- ["otp"]} strategy={s} form={@form} />
+    </div>
+    """
+  end
 
-        <.flash_group flash={@flash} />
+  def login_form(%{strategy: "password"} = assigns) do
+    ~H"""
+    <.form :let={f} for={@form} id="login_form_password" action={~p"/"} as={:user}>
+      <.input field={f[:email]} type="email" label="Email" autocomplete="username" required />
+      <.input
+        field={f[:password]}
+        type="password"
+        label="Password"
+        autocomplete="current-password"
+        required
+      />
+      <.input field={f[:remember_me]} type="checkbox" label="Keep me logged in" />
+      <.button class="w-full">
+        Log in with password <span aria-hidden="true">→</span>
+      </.button>
+    </.form>
+    """
+  end
+
+  def login_form(%{strategy: "otp"} = assigns) do
+    ~H"""
+    <.form :let={f} for={@form} id="login_form_otp" action={~p"/"} as={:user}>
+      <.input field={f[:email]} type="email" label="Email" required />
+      <.button class="w-full">
+        Send one-time password <span aria-hidden="true">→</span>
+      </.button>
+    </.form>
+    """
+  end
+
+  def login_form(%{strategy: "oauth"} = assigns) do
+    ~H"""
+    <div class="space-y-4">
+      <p class="text-center">Log in with a provider</p>
+      <div class="flex justify-center space-x-4">
+        <.button
+          :for={provider <- ["github", "google", "facebook"]}
+          class="w-full"
+          phx-click="oauth_login"
+          phx-value-provider={provider}
+        >
+          {provider}
+        </.button>
       </div>
     </div>
+    """
+  end
+
+  def login_form(%{strategy: "anon"} = assigns) do
+    ~H"""
+    <.form for={%{}} id="login_form_anon" action={~p"/"} as={:user}>
+      <.button class="w-full">
+        Continue anonymously <span aria-hidden="true">→</span>
+      </.button>
+    </.form>
+    """
+  end
+
+  def login_form(%{strategy: _} = assigns) do
+    ~H"""
+    <p>Strategy not implemented in LiveView yet</p>
     """
   end
 
   @impl true
   def mount(_params, _session, socket) do
     form = to_form(%{"email" => nil}, as: "user")
-    {:ok, assign(socket, form: form, loading: false)}
+    {:ok, assign(socket, form: form)}
   end
 
   @impl true
-  def handle_event("send_magic_link", %{"user" => %{"email" => email}}, socket) do
-    # Set loading state
-    socket = assign(socket, loading: true)
-
-    {:ok, client} = UserManagementWeb.UserAuth.get_client()
-
-    case Supabase.GoTrue.sign_in_with_otp(client, %{email: email}) do
-      :ok ->
-        {:noreply,
-         socket
-         |> assign(loading: false)
-         |> put_flash(
-           :info,
-           "Magic link sent to #{email}. Check your inbox and follow the link to sign in."
-         )}
-
-      {:error, %Supabase.Error{metadata: metadata}} ->
-        message = get_in(metadata, [:resp_body, "msg"]) || "Unknown error"
-
-        {:noreply,
-         socket
-         |> assign(loading: false)
-         |> put_flash(:error, "Couldn't send magic link: #{message}")}
-    end
+  def handle_event("oauth_login", %{"provider" => provider}, socket) do
+    # This would be handled by the controller
+    {:noreply, push_navigate(socket, to: ~p"/?provider=#{provider}")}
   end
 end
