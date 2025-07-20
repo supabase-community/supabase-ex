@@ -196,14 +196,15 @@ defmodule Supabase.Fetcher.Request do
 
   @doc """
   Defines the request body to be sent, it can be a map, that will be encoded
-  with `Jason.encode_to_iodata!/1`, any `iodata` or a stream body in the pattern of `{:stream, Enumerable.t}`, although you will problably prefer to use the `upload/2`
+  with `encode_to_iodata!/1`, any `iodata` or a stream body in the pattern of `{:stream, Enumerable.t}`, although you will problably prefer to use the `upload/2`
   function of this module to hadle body stream since it will handle file management, content headers and so on.
   """
   @impl true
   def with_body(builder, body \\ nil)
 
   def with_body(%__MODULE__{} = builder, %{} = body) do
-    %{builder | body: Jason.encode_to_iodata!(body)}
+    json_library = Supabase.json_library()
+    %{builder | body: json_library.encode_to_iodata!(body)}
   end
 
   def with_body(%__MODULE__{} = builder, body) do

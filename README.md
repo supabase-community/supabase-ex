@@ -7,7 +7,7 @@ def deps do
   [
     {:supabase_potion, "~> 0.6"}, # base SDK
     {:supabase_storage, "~> 0.4"}, # storage integration
-    {:supabase_gotrue, "~> 0.4"}, # auth integration
+    {:supabase_auth, "~> 0.6"}, # auth integration
     {:supabase_postgrest, "~> 1.0"}, # postgrest integration
     {:supabase_functions, "~> 0.1"}, # edge functions integration
     {:supabase_realtime, "~> 0.1"}, # realtime integration
@@ -20,27 +20,12 @@ Individual product client documentation:
 - [PostgREST](https://github.com/supabase-community/postgres-ex)
 - [Storage](https://github.com/supabase-community/storage-ex)
 - [Auth](https://github.com/supabase-community/auth-ex)
+- [Functions](https://github.com/supabase-community/functions-ex)
+- [Realtime](https://github.com/supabase-community/realtime-ex)
 
 ### Clients
 
 A `Supabase.Client` holds general information about Supabase, that can be used to intereact with any of the children integrations, for example: `Supabase.Storage` or `Supabase.UI`.
-
-`Supabase.Client` is defined as:
-
-- `:base_url` - The base url of the Supabase API, it is usually in the form `https://<app-name>.supabase.io`.
-- `:api_key` - The API key used to authenticate requests to the Supabase API.
-- `:access_token` - Token with specific permissions to access the Supabase API, it is usually the same as the API key.
-- `:db` - default database options
-    - `:schema` - default schema to use, defaults to `"public"`
-- `:global` - global options config
-    - `:headers` - additional headers to use on each request
-- `:auth` - authentication options
-    - `:auto_refresh_token` - automatically refresh the token when it expires, defaults to `true`
-    - `:debug` - enable debug mode, defaults to `false`
-    - `:detect_session_in_url` - detect session in URL, defaults to `true`
-    - `:flow_type` - authentication flow type, defaults to `"web"`
-    - `:persist_session` - persist session, defaults to `true`
-    - `:storage_key` - storage key
 
 ### Usage
 

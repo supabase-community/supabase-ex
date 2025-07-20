@@ -95,7 +95,7 @@ defmodule Supabase do
     {:ok, update_in(client.auth.storage_key, maybe_default)}
   end
 
-  defp maybe_put_storage_key(other), do: other
+  defp maybe_put_storage_key({:error, _changeset} = err), do: err
 
   defp default_storage_key(base_url) when is_binary(base_url) do
     base_url
@@ -110,7 +110,7 @@ defmodule Supabase do
     {:ok, put_in(client.global.headers, Map.new(headers))}
   end
 
-  defp put_default_headers(other), do: other
+  defp put_default_headers({:error, _changeset} = err), do: err
 
   defp default_headers do
     %{
@@ -164,5 +164,10 @@ defmodule Supabase do
 
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
+  end
+
+  @doc "Returns the configured JSON encoding library for Supabase libraries."
+  def json_library do
+    Application.get_env(:supabase, :json_library, Jason)
   end
 end

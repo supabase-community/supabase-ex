@@ -35,6 +35,6 @@ defmodule Supabase.Fetcher.JSONDecoder do
   @impl true
   def decode(%Response{body: body}, opts \\ []) do
     keys = Keyword.get(opts, :keys, :strings)
-    Jason.decode(body, keys: keys)
+    Supabase.json_library().decode(body, keys: keys)
   end
 end
