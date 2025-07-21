@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your signup</title>
+</head>
+<body>
+  <main>
+    <div class="email-content">
+      <h2>Confirm your email</h2>
+      <p>Follow this link to confirm your email:</p>
+      <a href="http://localhost:4000/sessions/token?token_hash={{ .TokenHash }}&type=signup">
+        Confirm your email
+      </a>
+      <p>Or enter the confirmation code: <strong>{{ .Token }}</strong></p>
+      <p>If you didn't request this email, you can safely ignore it.</p>
+    </div>
+  </main>
+</body>
+</html>

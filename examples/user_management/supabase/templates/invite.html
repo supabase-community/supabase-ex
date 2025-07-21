@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You have been invited</title>
+</head>
+<body>
+  <main>
+    <div class="email-content">
+      <h2>You have been invited</h2>
+      <p>You have been invited to create an account. Follow this link to accept the invite:</p>
+      <a href="http://localhost:4000/sessions/token?token_hash={{ .TokenHash }}&type=invite">
+        Accept invitation
+      </a>
+      <p>Or enter the invitation code: <strong>{{ .Token }}</strong></p>
+      <p>If you weren't expecting this invitation, you can safely ignore it.</p>
+    </div>
+  </main>
+</body>
+</html>
