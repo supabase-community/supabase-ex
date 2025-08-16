@@ -17,7 +17,7 @@ end
 
 Individual product client documentation:
 
-- [PostgREST](https://github.com/supabase-community/postgres-ex)
+- [PostgREST](https://github.com/supabase-community/postgrest-ex)
 - [Storage](https://github.com/supabase-community/storage-ex)
 - [Auth](https://github.com/supabase-community/auth-ex)
 - [Functions](https://github.com/supabase-community/functions-ex)
