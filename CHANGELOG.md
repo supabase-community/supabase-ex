@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.7.1](https://github.com/supabase-community/supabase-ex/compare/v0.7.0...v0.7.1) (2025-08-16)
+
+
+### Documentation
+
+* fix subproject URL, typos and miscellaneous edits ([#73](https://github.com/supabase-community/supabase-ex/issues/73)) ([00088a4](https://github.com/supabase-community/supabase-ex/commit/00088a4b366bb762268fe6d5d1112f4a9506b06a))
+
+
+### Miscellaneous Chores
+
+* user-management phoenix live view example ([#47](https://github.com/supabase-community/supabase-ex/issues/47)) ([af9eec9](https://github.com/supabase-community/supabase-ex/commit/af9eec9d537fd0d2ebecb304fe9341cf4f197c9a))
+
 ## [0.7.0](https://github.com/supabase-community/supabase-ex/compare/v0.6.2...v0.7.0) (2025-07-20)
 
 
