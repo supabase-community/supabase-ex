@@ -5,4 +5,6 @@ if config_env() == :dev do
     base_url: System.fetch_env!("SUPABASE_URL"),
     api_key: System.fetch_env!("SUPABASE_KEY"),
     env: config_env()
+
+  config :supabase, json_library: JSON
 end

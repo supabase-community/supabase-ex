@@ -166,8 +166,8 @@ defmodule Supabase do
     apply(__MODULE__, which, [])
   end
 
+  @json_library Application.compile_env(:supabase, :json_library, Jason)
+
   @doc "Returns the configured JSON encoding library for Supabase libraries."
-  def json_library do
-    Application.get_env(:supabase, :json_library, Jason)
-  end
+  def json_library, do: @json_library
 end
