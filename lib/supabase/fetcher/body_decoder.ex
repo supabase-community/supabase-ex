@@ -33,8 +33,7 @@ defmodule Supabase.Fetcher.JSONDecoder do
 
   @doc "Tries to decode the response body as JSON"
   @impl true
-  def decode(%Response{body: body}, opts \\ []) do
-    keys = Keyword.get(opts, :keys, :strings)
-    Supabase.json_library().decode(body, keys: keys)
+  def decode(%Response{body: body}, _) do
+    Supabase.json_library().decode(body)
   end
 end
