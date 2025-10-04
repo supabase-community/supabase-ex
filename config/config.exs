@@ -5,6 +5,8 @@ if config_env() == :dev do
     base_url: System.fetch_env!("SUPABASE_URL"),
     api_key: System.fetch_env!("SUPABASE_KEY"),
     env: config_env()
+end
 
-  config :supabase, json_library: JSON
+if config_env() in [:dev, :test] do
+  config :supabase_potion, json_library: JSON
 end
