@@ -166,8 +166,37 @@ defmodule Supabase do
     apply(__MODULE__, which, [])
   end
 
-  @json_library Application.compile_env(:supabase, :json_library, Jason)
+  @json_library Application.compile_env(:supabase_potion, :json_library, Jason)
 
   @doc "Returns the configured JSON encoding library for Supabase libraries."
+  @spec json_library :: Poison | Jason | JSON
   def json_library, do: @json_library
+
+  @doc false
+  defguardp is_atom_opt(atom) when atom in ~w(atoms atoms!)a
+
+  @doc false
+  def decode_json(term, opts) do
+    keys = Keyword.get(opts, :keys)
+
+    with {:ok, decoded} <- json_library().decode(term) do
+      if is_atom_opt(keys), do: atom_keys(decoded, keys), else: decoded
+    end
+  end
+
+  defp atom_keys(term, atom) when is_list(term) do
+    Enum.map(term, &atom_keys(&1, atom))
+  end
+
+  defp atom_keys(term, atom) when is_map(term) do
+    key =
+      if atom == :atoms!,
+        do: &String.to_existing_atom/1,
+        else: &String.to_atom/1
+
+    Map.new(term, fn
+      {k, v} when is_map(v) -> {key.(k), atom_keys(v, atom)}
+      {k, v} -> {key.(k), v}
+    end)
+  end
 end
