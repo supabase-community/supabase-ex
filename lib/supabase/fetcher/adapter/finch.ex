@@ -124,10 +124,20 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   @impl true
   def upload(%Request{} = b, file, opts \\ []) do
-    mime_type = MIME.from_path(file)
     body_stream = File.stream!(file, 2048)
     %File.Stat{size: content_length} = File.stat!(file)
-    content_headers = [{"content-length", to_string(content_length)}, {"content-type", mime_type}]
+
+    # Only use MIME.from_path if content-type is not already set
+    content_type =
+      case Supabase.Fetcher.Request.get_header(b, "content-type") do
+        nil -> MIME.from_path(file)
+        existing -> existing
+      end
+
+    content_headers = [
+      {"content-length", to_string(content_length)},
+      {"content-type", content_type}
+    ]
 
     b
     |> with_body({:stream, body_stream})
