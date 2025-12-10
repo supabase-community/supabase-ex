@@ -166,8 +166,19 @@ defmodule Supabase do
     apply(__MODULE__, which, [])
   end
 
-  @json_library Application.compile_env(:supabase, :json_library, Jason)
+  @json_library Application.compile_env(:supabase_potion, :json_library, Jason)
 
   @doc "Returns the configured JSON encoding library for Supabase libraries."
+  @spec json_library :: Poison | Jason | JSON
   def json_library, do: @json_library
+
+  @doc false
+  def decode_json(term) do
+    json_library().decode(term)
+  end
+
+  @doc false
+  def encode_json(term) do
+    json_library().encode!(term)
+  end
 end

@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.7.2](https://github.com/supabase-community/supabase-ex/compare/v0.7.1...v0.7.2) (2025-11-25)
+
+
+### Bug Fixes
+
+* adjust content-type header in `Fetcher.Adapter.Finch.upload/3` ([#76](https://github.com/supabase-community/supabase-ex/issues/76)) ([f203781](https://github.com/supabase-community/supabase-ex/commit/f203781938827ca6cc9e68398ec07a8c40bd8c11))
+* correctly handle different json libraries apis/decoding opts ([#75](https://github.com/supabase-community/supabase-ex/issues/75)) ([107ddf2](https://github.com/supabase-community/supabase-ex/commit/107ddf27ffaa8ae3a771d8609c0677e98837b796))
+
 ## [0.7.1](https://github.com/supabase-community/supabase-ex/compare/v0.7.0...v0.7.1) (2025-09-30)
 
 
