@@ -96,7 +96,7 @@ defmodule Supabase.Fetcher.Request do
     body_decoder: Supabase.Fetcher.JSONDecoder,
     error_parser: Supabase.HTTPErrorParser,
     http_client: Supabase.Fetcher.Adapter.Finch,
-    options: [decode_body?: false, parse_http_error?: false]
+    options: []
   ]
 
   @doc """
@@ -142,7 +142,12 @@ defmodule Supabase.Fetcher.Request do
   @impl true
   def with_body_decoder(%__MODULE__{} = builder, decoder, decoder_opts \\ [])
       when (is_atom(decoder) or is_function(decoder, 2)) and is_list(decoder_opts) do
-    %{builder | body_decoder: decoder, body_decoder_opts: decoder_opts}
+    %{
+      builder
+      | body_decoder: decoder,
+        body_decoder_opts: decoder_opts,
+        options: Keyword.put(builder.options, :decode_body?, true)
+    }
   end
 
   @doc """
