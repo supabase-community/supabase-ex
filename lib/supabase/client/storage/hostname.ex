@@ -94,13 +94,9 @@ defmodule Supabase.Client.Storage.Hostname do
     Regex.match?(@supabase_domain_regex, hostname)
   end
 
-  defp supabase_domain?(_), do: false
-
   defp has_storage_subdomain?(hostname) when is_binary(hostname) do
     Regex.match?(@storage_subdomain_regex, hostname)
   end
-
-  defp has_storage_subdomain?(_), do: false
 
   defp transform_hostname(hostname) when is_binary(hostname) do
     String.replace(hostname, "supabase.", "storage.supabase.", global: false)
