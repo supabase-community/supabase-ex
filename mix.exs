@@ -32,6 +32,7 @@ defmodule Supabase.MixProject do
   defp deps do
     [
       {:mime, "~> 2.0"},
+      {:multipart, "~> 0.4.0"},
       {:finch, "~> 0.18"},
       {:ecto, "~> 3.10"},
       {:jason, "~> 1.4", optional: true},

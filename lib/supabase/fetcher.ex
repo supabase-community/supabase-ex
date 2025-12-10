@@ -253,7 +253,7 @@ defmodule Supabase.Fetcher do
       if decode_body? do
         Response.decode_body(resp, decoder, decoder_opts)
       else
-        resp
+        {:ok, resp}
       end
     end
 
