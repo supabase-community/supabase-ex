@@ -5,16 +5,43 @@ defmodule Supabase.Client do
 
   ## Usage
 
-  Generally, you can start a client by calling `Supabase.init_client/3`:
+  There are two ways to create a Supabase client:
+
+  ### 1. Module-based Client (Recommended)
+
+  Define a client module using the macro (similar to Ecto Repo). This approach
+  reads configuration from your application config and builds a fresh client
+  struct on each call:
+
+      # lib/my_app/supabase.ex
+      defmodule MyApp.Supabase do
+        use Supabase.Client, otp_app: :my_app
+      end
+
+      # config/config.exs
+      config :my_app, MyApp.Supabase,
+        base_url: "https://<app-name>.supabase.io",
+        api_key: "<supabase-api-key>",
+        db: [schema: "public"],
+        auth: [flow_type: :pkce]
+
+      # Usage
+      iex> client = MyApp.Supabase.get_client!()
+      iex> %Supabase.Client{}
+
+  ### 2. Direct Initialization
+
+  Alternatively, create a client directly using `Supabase.init_client/3`:
 
       iex> base_url = "https://<app-name>.supabase.io"
       iex> api_key = "<supabase-api-key>"
       iex> Supabase.init_client(base_url, api_key, %{})
       {:ok, %Supabase.Client{}}
 
-  For more information on how to configure your Supabase Client with additional options, please refer to the `Supabase.Client.t()` typespec.
+  For more information on how to configure your Supabase Client with additional
+  options, please refer to the `Supabase.Client.t()` typespec.
 
-  ## Examples
+  ## Client Structure
 
       %Supabase.Client{
         base_url: "https://<app-name>.supabase.io",
