@@ -9,10 +9,6 @@ defmodule Supabase.Client.Behaviour do
 
   alias Supabase.Client
 
-  @callback init :: {:ok, Client.t()} | {:error, Ecto.Changeset.t()}
-  @callback get_client :: {:ok, Client.t()} | {:error, :not_found}
-  @callback get_client(pid | atom) :: {:ok, Client.t()} | {:error, :not_found}
-  @callback set_auth(pid | atom, access_token :: String.t()) :: :ok
-
-  @optional_callbacks get_client: 0, get_client: 1, set_auth: 2
+  @callback get_client! :: Client.t()
+  @callback set_auth!(access_token :: String.t()) :: Client.t()
 end
