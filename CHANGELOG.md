@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.7.3](https://github.com/supabase-community/supabase-ex/compare/v0.7.2...v0.7.3) (2026-02-04)
+
+
+### Bug Fixes
+
+* deprecate self managed clients ([#80](https://github.com/supabase-community/supabase-ex/issues/80)) ([4873120](https://github.com/supabase-community/supabase-ex/commit/4873120b8d292f7dccb90410b9634aa8c01d3640))
+* remove self managed client api ([#81](https://github.com/supabase-community/supabase-ex/issues/81)) ([7fa2e9c](https://github.com/supabase-community/supabase-ex/commit/7fa2e9cfd09699e6da64401fd04481a0bc499cf6))
+
 ## [0.7.2](https://github.com/supabase-community/supabase-ex/compare/v0.7.1...v0.7.2) (2025-11-25)
 
 
