@@ -29,7 +29,32 @@ A `Supabase.Client` holds general information about Supabase that can be used to
 
 ### Usage
 
-To create a `Supabase.Client`:
+#### Module-based Client (Recommended)
+
+You can define a client module using the macro (similar to Ecto Repo). This approach reads configuration from your application config and builds a fresh client struct on each call:
+
+```elixir
+# lib/my_app/supabase.ex
+defmodule MyApp.Supabase do
+  use Supabase.Client, otp_app: :my_app
+end
+
+# config/config.exs
+config :my_app, MyApp.Supabase,
+  base_url: "https://<supabase-url>",
+  api_key: "<supabase-api-key>",
+  db: [schema: "public"],
+  auth: [flow_type: :pkce],
+  global: [headers: %{"custom-header" => "custom-value"}]
+
+# Usage
+iex> client = MyApp.Supabase.get_client!()
+iex> %Supabase.Client{}
+```
+
+#### Direct Initialization
+
+Alternatively, you can create a client directly using `Supabase.init_client/3`:
 
 ```elixir
 iex> Supabase.init_client("https://<supabase-url>", "<supabase-api-key>")
