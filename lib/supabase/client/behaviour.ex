@@ -1,18 +1,30 @@
 defmodule Supabase.Client.Behaviour do
   @moduledoc """
-  The behaviour for the Supabase Client. This behaviour is used to define the API for a Supabase Client.
+  The behaviour for the Supabase Client. This behaviour defines a consistent
+  API for modules that provide Supabase client functionality.
 
-  If you're implementing a [Self Managed Client](https://github.com/zoedsoupe/supabase-ex?tab=readme-ov-file#self-managed-clients) as the [Supabase.Client](https://hexdocs.pm/supabase_potion/Supabase.Client.html), this behaviour is already implemented for you.
+  ## Usage
 
-  If you're implementing a [One Off Client](https://github.com/zoedsoupe/supabase-ex?tab=readme-ov-file#one-off-clients) as the [Supabase.Client](https://hexdocs.pm/supabase_potion/Supabase.Client.html), you need to implement this behaviour in case you want to use the integration with [Supabase.GoTrue](https://hexdocs.pm/supabase_gotrue/readme.html) for [Plug](https://hexdocs.pm/plug) based application or [Phoenix.LiveView](https://hexdocs.pm/phoenix_live_view) applications.
+  When you use the `Supabase.Client` macro in your module (similar to Ecto Repo),
+  this behaviour is automatically implemented for you:
+
+      defmodule MyApp.Supabase do
+        use Supabase.Client, otp_app: :my_app
+      end
+
+  This provides two callbacks:
+
+  - `get_client!/0` - Builds a fresh client struct from application config
+  - `set_auth!/1` - Updates the access token on a client instance
+
+  ## Custom Implementations
+
+  You can also implement this behaviour manually if you need custom client
+  initialization logic.
   """
 
   alias Supabase.Client
 
-  @callback init :: {:ok, Client.t()} | {:error, Ecto.Changeset.t()}
-  @callback get_client :: {:ok, Client.t()} | {:error, :not_found}
-  @callback get_client(pid | atom) :: {:ok, Client.t()} | {:error, :not_found}
-  @callback set_auth(pid | atom, access_token :: String.t()) :: :ok
-
-  @optional_callbacks get_client: 0, get_client: 1, set_auth: 2
+  @callback get_client! :: Client.t()
+  @callback set_auth!(access_token :: String.t()) :: Client.t()
 end

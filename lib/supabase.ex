@@ -53,9 +53,7 @@ defmodule Supabase do
   @typep changeset :: Ecto.Changeset.t()
 
   @doc """
-  Creates a new one off Supabase client, you you wanna a self managed client, that
-  levarages an [Agent][https://hexdocs.pm/elixir/Agent.html] instance that can
-  started in your application supervision tree, check the `Supabase.Client` module docs.
+  Creates a new Supabase client struct
 
   ## Parameters
   - `base_url`: The unique Supabase URL which is supplied when you create a new project in your project dashboard.

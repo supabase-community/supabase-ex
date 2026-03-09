@@ -147,7 +147,7 @@ defmodule Supabase.Fetcher do
   @type headers :: list({header :: String.t(), value :: String.t()})
   @type query :: list({param :: String.t(), value :: String.t()})
   @type method :: :get | :post | :head | :patch | :put | :delete
-  @type body :: iodata | {:stream, Enumerable.t()} | nil
+  @type body :: iodata | map | {:stream, Enumerable.t()} | nil
   @type url :: String.t() | URI.t()
 
   @doc """

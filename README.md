@@ -29,13 +29,32 @@ A `Supabase.Client` holds general information about Supabase that can be used to
 
 ### Usage
 
-There are two ways to create a `Supabase.Client`:
-1. one off clients
-2. self managed clients
+#### Module-based Client (Recommended)
 
-#### One off clients
+You can define a client module using the macro (similar to Ecto Repo). This approach reads configuration from your application config and builds a fresh client struct on each call:
 
-One off clients are created and managed by your application. They are useful for quick interactions with the Supabase API.
+```elixir
+# lib/my_app/supabase.ex
+defmodule MyApp.Supabase do
+  use Supabase.Client, otp_app: :my_app
+end
+
+# config/config.exs
+config :my_app, MyApp.Supabase,
+  base_url: "https://<supabase-url>",
+  api_key: "<supabase-api-key>",
+  db: [schema: "public"],
+  auth: [flow_type: :pkce],
+  global: [headers: %{"custom-header" => "custom-value"}]
+
+# Usage
+iex> client = MyApp.Supabase.get_client!()
+iex> %Supabase.Client{}
+```
+
+#### Direct Initialization
+
+Alternatively, you can create a client directly using `Supabase.init_client/3`:
 
 ```elixir
 iex> Supabase.init_client("https://<supabase-url>", "<supabase-api-key>")
@@ -54,63 +73,3 @@ iex> {:ok, %Supabase.Client{}}
 ```
 
 Initialized clients are Elixir structs without any managed state.
-
-You can also implement the `Supabase.Client.Behaviour` callbacks to centralize client initialisation logic.
-
-#### Self managed clients
-
-Self managed clients are created and managed by a separate process in your application. They are useful for long running applications that need to interact with the Supabase API.
-
-If you don't have experience with processes or are new to Elixir, you should read the getting started section of the official Elixir documentation - specifically about processes, concurrency and distribution before proceeding.
-- [Processes](https://hexdocs.pm/elixir/processes.html)
-- [Agent getting started](https://hexdocs.pm/elixir/agents.html)
-- [GenServer getting started](https://hexdocs.pm/elixir/genservers.html)
-- [Supervision trees getting started](https://hexdocs.pm/elixir/supervisor-and-application.html)
-
-To define a self managed client, create a module that will hold the client state and the client process as an [Agent](https://hexdocs.pm/elixir/Agent.html).
-
-```elixir
-defmodule MyApp.Supabase.Client do
-  use Supabase.Client, otp_app: :my_app
-end
-```
-
-For that to work, you will also need to configure the client in your application's configuration. This can be configured as a compile-time entry in `config.exs` or as a runtime entry in `runtime.exs`:
-
-```elixir
-import Config
-
-# `:my_app` here is the same `otp_app` option you passed
-config :my_app, MyApp.Supabase.Client,
-  base_url: "https://<supabase-url>", # required
-  api_key: "<supabase-api-key>", # required
-  access_token: "<supabase-token>", # optional
-   # additional options
-  db: [schema: "another"],
-  auth: [flow_type: :implicit, debug: true],
-  global: [headers: %{"custom-header" => "custom-value"}]
-```
-
-Then you can start the client process in your application supervision tree, generally in a `application.ex` module:
-
-```elixir
-defmodule MyApp.Application do
-  use Application
-
-  def start(_type, _args) do
-    children = [
-      MyApp.Supabase.Client
-    ]
-
-    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
-end
-```
-
-To interact with the client process:
-
-```elixir
-iex> {:ok, client} = MyApp.Supabase.Client.get_client()
-iex> Supabase.GoTrue.sign_in_with_password(client, email: "", password: "")
-```

@@ -5,56 +5,43 @@ defmodule Supabase.Client do
 
   ## Usage
 
-  Generally, you can start a client by calling `Supabase.init_client/3`:
+  There are two ways to create a Supabase client:
+
+  ### 1. Module-based Client (Recommended)
+
+  Define a client module using the macro (similar to Ecto Repo). This approach
+  reads configuration from your application config and builds a fresh client
+  struct on each call:
+
+      # lib/my_app/supabase.ex
+      defmodule MyApp.Supabase do
+        use Supabase.Client, otp_app: :my_app
+      end
+
+      # config/config.exs
+      config :my_app, MyApp.Supabase,
+        base_url: "https://<app-name>.supabase.io",
+        api_key: "<supabase-api-key>",
+        db: [schema: "public"],
+        auth: [flow_type: :pkce]
+
+      # Usage
+      iex> client = MyApp.Supabase.get_client!()
+      iex> %Supabase.Client{}
+
+  ### 2. Direct Initialization
+
+  Alternatively, create a client directly using `Supabase.init_client/3`:
 
       iex> base_url = "https://<app-name>.supabase.io"
       iex> api_key = "<supabase-api-key>"
       iex> Supabase.init_client(base_url, api_key, %{})
       {:ok, %Supabase.Client{}}
 
-  > That way of initialisation is useful when you want to manage the client state by yourself or create one off clients.
+  For more information on how to configure your Supabase Client with additional
+  options, please refer to the `Supabase.Client.t()` typespec.
 
-  However, starting a client directly means you have to manage the client state by yourself. To make it easier, you can use the `Supabase.Client` module to manage the connection options for you, which we call a "self managed client".
-
-  To achieve this you can use the `Supabase.Client` module in your module:
-
-      defmodule MyApp.Supabase.Client do
-        use Supabase.Client, otp_app: :my_app
-      end
-
-  This will automatically start an [Agent](https://hexdocs.pm/elixir/Agent.html) process to manage the state for you. But for that to work, you need to configure your Supabase client options in your application configuration, either in compile-time (`config.exs`) or runtime (`runtime.exs`):
-
-      # config/runtime.exs or config/config.exs
-
-      config :my_app, MyApp.Supabase.Client,
-        base_url: "https://<app-name>.supabase.co",
-        api_key: "<supabase-api-key>",
-        # any additional options
-        access_token: "<supabase-access-token>",
-        db: [schema: "another"],
-        auth: [debug: true] # optional
-
-  Another alternative would be to configure your Supabase Client in code, while starting your application:
-
-      defmodule MyApp.Application do
-        use Application
-
-        def start(_type, _args) do
-          children = [
-            {MyApp.Supabase.Client, [
-              base_url: "https://<app-name>.supabase.co",
-              api_key: "<supabase-api-key>"
-            ]}
-          ]
-
-          opts = [strategy: :one_for_one, name: MyApp.Supabase.Client.Supervisor]
-          Supervisor.start_link(children, opts)
-        end
-      end
-
-  For more information on how to configure your Supabase Client with additional options, please refer to the `Supabase.Client.t()` typespec.
-
-  ## Examples
+  ## Client Structure
 
       %Supabase.Client{
         base_url: "https://<app-name>.supabase.io",
@@ -117,8 +104,6 @@ defmodule Supabase.Client do
   @typedoc """
   The type for the available additional options that can be passed
   to `Supabase.init_client/3` to configure the Supabase client.
-
-  Note that these options can be passed to `Supabase.init_client/3` as `Enumerable`, which means it can be either a `Keyword.t()` or a `Map.t()`, but internally it will be passed as a map.
   """
   @type options :: %{
           optional(:db) => Db.params(),
@@ -127,12 +112,9 @@ defmodule Supabase.Client do
           optional(:storage) => Storage.params()
         }
 
+  @spec __using__(otp_app: atom) :: Macro.t()
   defmacro __using__(otp_app: otp_app) do
-    module = __CALLER__.module
-
     quote do
-      use Agent
-
       import Supabase.Client, only: [update_access_token: 2]
 
       alias Supabase.MissingSupabaseConfig
@@ -142,103 +124,16 @@ defmodule Supabase.Client do
       @otp_app unquote(otp_app)
 
       @doc """
-      Start an Agent process to manage the Supabase client instance.
+      Builds a `Supabase.Client` struct based on application config, so you can use it to interact with the Supabase API.
 
-      ## Usage
-
-      First, define your client module and use the `Supabase.Client` module:
-
-          defmodule MyApp.Supabase.Client do
-            use Supabase.Client, otp_app: :my_app
-          end
-
-      Note that you need to configure it with your Supabase project details. You can do this by setting the `base_url` and `api_key` in your `config.exs` file:
-
-          config :#{@otp_app}, #{inspect(unquote(module))},
-            base_url: "https://<app-name>.supabase.co",
-            api_key: "<supabase-api-key>",
-            # additional options
-            access_token: "<supabase-access-token>",
-            db: [schema: "another"],
-            auth: [debug: true]
-
-      Then, on your `application.ex` file, you can start the agent process by adding your defined client into the Supervision tree of your project:
-
-          def start(_type, _args) do
-            children = [
-              #{inspect(unquote(module))}
-            ]
-
-            Supervisor.init(children, strategy: :one_for_one)
-          end
-
-      For alternatives on how to start and define your Supabase client instance, please refer to the [Supabase.Client module documentation](https://hexdocs.pm/supabase_potion/Supabase.Client.html).
-
-      For more information on how to start an Agent process, please refer to the [Agent module documentation](https://hexdocs.pm/elixir/Agent.html).
+      Read more on `Supabase.Client.Behaviour`
       """
-      def start_link(opts \\ [])
-
-      def start_link(opts) when is_list(opts) and opts == [] do
+      @impl Supabase.Client.Behaviour
+      def get_client! do
         config = Application.get_env(@otp_app, __MODULE__)
-
-        if is_nil(config) do
-          raise MissingSupabaseConfig, key: :config, client: __MODULE__, otp_app: @otp_app
-        end
-
         base_url = Keyword.get(config, :base_url)
         api_key = Keyword.get(config, :api_key)
-        name = Keyword.get(config, :name, __MODULE__)
-        params = Map.new(config)
-
-        if is_nil(base_url) do
-          raise MissingSupabaseConfig, key: :url, client: __MODULE__, otp_app: @otp_app
-        end
-
-        if is_nil(api_key) do
-          raise MissingSupabaseConfig, key: :key, client: __MODULE__, otp_app: @otp_app
-        end
-
-        Agent.start_link(fn -> Supabase.init_client!(base_url, api_key, params) end, name: name)
-      end
-
-      def start_link(opts) when is_list(opts) do
-        base_url = Keyword.get(opts, :base_url)
-        api_key = Keyword.get(opts, :api_key)
-
-        if is_nil(base_url) do
-          raise MissingSupabaseConfig, key: :url, client: __MODULE__, otp_app: @otp_app
-        end
-
-        if is_nil(api_key) do
-          raise MissingSupabaseConfig, key: :key, client: __MODULE__, otp_app: @otp_app
-        end
-
-        name = Keyword.get(opts, :name, __MODULE__)
-        params = Map.new(opts)
-
-        Agent.start_link(
-          fn ->
-            Supabase.init_client!(base_url, api_key, params)
-          end,
-          name: name
-        )
-      end
-
-      @doc """
-      This function is an alias for `start_link/1` with no arguments.
-      """
-      @impl Supabase.Client.Behaviour
-      def init, do: start_link([])
-
-      @doc """
-      Retrieve the client instance from the Agent process, so you can use it to interact with the Supabase API.
-      """
-      @impl Supabase.Client.Behaviour
-      def get_client(pid \\ __MODULE__) do
-        case Agent.get(pid, & &1) do
-          nil -> {:error, :not_found}
-          client -> {:ok, client}
-        end
+        Supabase.init_client!(base_url, api_key, Map.new(config))
       end
 
       @doc """
@@ -246,10 +141,12 @@ defmodule Supabase.Client do
       that will then be used by the integrations as the `Authorization`
       header in requests, by default the `access_token` have the same
       value as the `api_key`.
+
+      Read more on `Supabase.Client.update_access_token/2`
       """
       @impl Supabase.Client.Behaviour
-      def set_auth(pid \\ __MODULE__, token) when is_binary(token) do
-        Agent.update(pid, &update_access_token(&1, token))
+      def set_auth!(token) when is_binary(token) do
+        update_access_token(get_client!(), token)
       end
     end
   end
@@ -313,15 +210,6 @@ defmodule Supabase.Client do
   @doc """
   Helper function to swap the current acccess token being used in
   the Supabase client instance.
-
-  Note that this functions shoudln't be used directly if you are using a
-  self managed client (aka started it into your supervision tree as the `Supabase.Client` moduledoc says), since it will return the updated client but it **won't**
-  update the inner client in the `Agent` process.
-
-  To update the access token for a self managed client, you can use the `set_auth/2` function that is generated when you configure your client module.
-
-  If you're managing your own Supabase client state (aka one off clients) you can
-  use this helper function.
   """
   @spec update_access_token(t, String.t()) :: t
   def update_access_token(%__MODULE__{} = client, access_token) do
