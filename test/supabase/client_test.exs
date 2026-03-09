@@ -25,7 +25,7 @@ defmodule Supabase.ClientTest do
     use Supabase.Client, otp_app: :supabase_potion
   end
 
-  describe "Agent behavior" do
+  describe "client definition" do
     setup do
       config = [
         base_url: @valid_base_url,
@@ -35,12 +35,11 @@ defmodule Supabase.ClientTest do
       ]
 
       Application.put_env(:supabase_potion, TestClient, config)
-      pid = start_supervised!(TestClient)
-      {:ok, pid: pid}
+      :ok
     end
 
-    test "retrieves client from Agent", %{pid: pid} do
-      assert {:ok, %Client{} = client} = TestClient.get_client(pid)
+    test "retrieves client" do
+      assert %Client{} = client = TestClient.get_client!()
       assert client.base_url == @valid_base_url
       assert client.api_key == @valid_api_key
       assert client.access_token == "123"
@@ -48,12 +47,11 @@ defmodule Supabase.ClientTest do
       assert client.auth.storage_key == "test-key"
     end
 
-    test "updates access token in client", %{pid: pid} do
+    test "updates access token in client" do
       new_access_token = "new_access_token"
-      assert {:ok, %Client{} = client} = TestClient.get_client(pid)
+      assert %Client{} = client = TestClient.get_client!()
       assert client.access_token == "123"
-      assert :ok = TestClient.set_auth(pid, new_access_token)
-      assert {:ok, %Client{} = client} = TestClient.get_client(pid)
+      assert %Client{} = client = TestClient.set_auth!(new_access_token)
       assert client.access_token == new_access_token
     end
   end
