@@ -80,6 +80,7 @@ defmodule Supabase.Fetcher.Request do
           body_decoder_opts: keyword,
           error_parser: module,
           http_client: module,
+          http_client_opts: keyword,
           options: options
         }
 
@@ -95,6 +96,7 @@ defmodule Supabase.Fetcher.Request do
     body_decoder: Supabase.Fetcher.JSONDecoder,
     error_parser: Supabase.HTTPErrorParser,
     http_client: Supabase.Fetcher.Adapter.Finch,
+    http_client_opts: [],
     options: []
   ]
 
@@ -181,8 +183,9 @@ defmodule Supabase.Fetcher.Request do
   dispatching the request. The default one is `Supabase.Fetcher.Adapter.Finch`
   """
   @impl true
-  def with_http_client(%__MODULE__{} = builder, adapter) when is_atom(adapter) do
-    %{builder | http_client: adapter}
+  def with_http_client(%__MODULE__{} = builder, adapter, opts \\ [])
+      when is_atom(adapter) do
+    %{builder | http_client: adapter, http_client_opts: opts}
   end
 
   @doc """

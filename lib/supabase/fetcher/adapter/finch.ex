@@ -9,23 +9,25 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   @impl true
   def request(%Request{method: method, headers: headers} = b, opts \\ []) do
+    {name, opts} = Keyword.pop(opts, :name)
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
     method
     |> Finch.build(url, headers, b.body)
-    |> Finch.request(Supabase.Finch, opts)
+    |> Finch.request(name, opts)
   end
 
   @impl true
   def request_async(%Request{method: method, headers: headers} = b, opts \\ []) do
+    {name, opts} = Keyword.pop(opts, :name)
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
     ref =
       method
       |> Finch.build(url, headers, b.body)
-      |> Finch.async_request(Supabase.Finch, opts)
+      |> Finch.async_request(name, opts)
 
     error =
       receive do
@@ -107,10 +109,11 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   defp spawn_stream_task(%Finch.Request{} = req, ref, opts) do
     me = self()
+    {name, opts} = Keyword.pop(opts, :name)
 
     Task.async(fn ->
       on_chunk = fn chunk, _acc -> send(me, {:chunk, chunk, ref}) end
-      Finch.stream(req, Supabase.Finch, nil, on_chunk, opts)
+      Finch.stream(req, name, nil, on_chunk, opts)
       send(me, {:done, ref})
     end)
   end

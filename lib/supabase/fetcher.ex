@@ -156,6 +156,8 @@ defmodule Supabase.Fetcher do
   @impl true
   def request(%Request{http_client: http_client} = builder, opts \\ [])
       when not is_nil(builder.url) do
+    opts = builder.http_client_opts ++ opts
+
     with {:ok, resp} <- http_client.request(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
     end
@@ -182,6 +184,8 @@ defmodule Supabase.Fetcher do
   @impl true
   def request_async(%Request{http_client: http_client} = builder, opts \\ [])
       when not is_nil(builder.url) do
+    opts = builder.http_client_opts ++ opts
+
     with {:ok, resp} <- http_client.request_async(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
     end
@@ -210,6 +214,8 @@ defmodule Supabase.Fetcher do
 
   def stream(%Request{http_client: http_client} = builder, nil, opts)
       when not is_nil(builder.url) do
+    opts = builder.http_client_opts ++ opts
+
     with {:ok, resp} <- http_client.stream(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
     end
@@ -220,6 +226,7 @@ defmodule Supabase.Fetcher do
 
   def stream(%Request{http_client: http_client} = builder, on_response, opts)
       when not is_nil(builder.url) do
+    opts = builder.http_client_opts ++ opts
     http_client.stream(builder, on_response, opts)
   rescue
     exception -> handle_exception(exception, __STACKTRACE__, builder)
@@ -231,6 +238,8 @@ defmodule Supabase.Fetcher do
   @impl true
   def upload(%Request{http_client: http_client} = builder, file, opts \\ [])
       when not is_nil(builder.url) do
+    opts = builder.http_client_opts ++ opts
+
     with {:ok, resp} <- http_client.upload(builder, file, opts) do
       {:ok, ResponseAdapter.from(resp)}
     end
