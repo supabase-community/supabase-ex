@@ -23,7 +23,10 @@ defmodule Supabase.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [extra_applications: [:logger]]
+    [
+      mod: {Supabase.Application, []},
+      extra_applications: [:logger]
+    ]
   end
 
   defp deps do

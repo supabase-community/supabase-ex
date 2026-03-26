@@ -100,6 +100,8 @@ defmodule Supabase.Fetcher.Request do
     options: []
   ]
 
+  @default_http_adapter Supabase.Fetcher.Adapter.Finch
+
   @doc """
   Initialise the `Supabase.Fetcher` struct, accumulating the
   client global headers and the client itself, so the request can be
@@ -113,8 +115,12 @@ defmodule Supabase.Fetcher.Request do
       |> Map.put("apikey", client.api_key)
       |> Map.to_list()
 
-    %__MODULE__{client: client, headers: headers}
+    %__MODULE__{client: client, headers: headers, http_client: get_http_adapter()}
     |> Map.update!(:options, &Keyword.merge(&1, opts))
+  end
+
+  defp get_http_adapter do
+    Application.get_env(:supabase_potion, :http_client, @default_http_adapter)
   end
 
   @services [:auth, :functions, :storage, :realtime, :database]

@@ -9,7 +9,8 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   @impl true
   def request(%Request{method: method, headers: headers} = b, opts \\ []) do
-    {name, opts} = Keyword.pop(opts, :name)
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
@@ -20,7 +21,8 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   @impl true
   def request_async(%Request{method: method, headers: headers} = b, opts \\ []) do
-    {name, opts} = Keyword.pop(opts, :name)
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
@@ -109,7 +111,8 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   defp spawn_stream_task(%Finch.Request{} = req, ref, opts) do
     me = self()
-    {name, opts} = Keyword.pop(opts, :name)
+
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
 
     Task.async(fn ->
       on_chunk = fn chunk, _acc -> send(me, {:chunk, chunk, ref}) end
@@ -146,6 +149,10 @@ defmodule Supabase.Fetcher.Adapter.Finch do
     |> with_body({:stream, body_stream})
     |> with_headers(content_headers)
     |> request(opts)
+  end
+
+  defp finch_name do
+    Application.get_env(:supabase_potion, :finch_name, Supabase.Finch)
   end
 
   defimpl Supabase.Fetcher.ResponseAdapter, for: Finch.Response do
