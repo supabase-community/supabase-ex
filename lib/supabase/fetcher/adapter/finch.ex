@@ -1,5 +1,11 @@
 defmodule Supabase.Fetcher.Adapter.Finch do
-  @moduledoc "HTTP Client backend implementation for `Supabase.Fetcher` using Finch"
+  @moduledoc """
+  HTTP client adapter for `Supabase.Fetcher` using Finch.
+
+  By default uses the `Supabase.Finch` pool. To use your own Finch instance:
+
+      config :supabase_potion, finch_name: MyApp.Finch
+  """
 
   use Supabase.Fetcher.Adapter
 
