@@ -121,10 +121,8 @@ defmodule Supabase.Fetcher.Multipart do
   """
   @spec encode(parts()) :: {content_type :: String.t(), body :: iodata()}
   def encode(parts) when is_list(parts) do
-    mp = Multipart.new()
-
     mp =
-      Enum.reduce(parts, mp, fn part, acc ->
+      Enum.reduce(parts, Multipart.new(), fn part, acc ->
         Multipart.add_part(acc, encode_part(part))
       end)
 
