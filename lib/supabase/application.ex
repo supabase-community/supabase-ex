@@ -7,7 +7,7 @@ defmodule Supabase.Application do
   def start(_start_type, _args) do
     children =
       if start_default_finch?() do
-        [{Finch, name: Supabase.Finch, pools: %{default: [size: 10]}}]
+        [{Finch, name: Supabase.Finch, pools: get_finch_pool()}]
       else
         []
       end
@@ -21,6 +21,10 @@ defmodule Supabase.Application do
   defp start_default_finch? do
     is_nil(Application.get_env(:supabase_potion, :http_client)) and
       is_nil(Application.get_env(:supabase_potion, :finch_name))
+  end
+
+  defp get_finch_pool do
+    Application.get_env(:supabase_potion, :finch_pool, %{default: [size: 10]})
   end
 
   @spec maybe_append_child([child], (env -> boolean()), child) :: [child]
