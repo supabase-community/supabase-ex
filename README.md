@@ -73,3 +73,37 @@ iex> {:ok, %Supabase.Client{}}
 ```
 
 Initialized clients are Elixir structs without any managed state.
+
+### HTTP Client Configuration
+
+By default, `supabase_potion` starts a Finch pool named `Supabase.Finch`. You can customize this behavior with three application config keys:
+
+#### `:http_client`
+
+Replace the default Finch adapter with a custom HTTP client module:
+
+```elixir
+config :supabase_potion, http_client: MyApp.CustomHTTPClient
+```
+
+When set, no Finch pool is started automatically.
+
+#### `:finch_name`
+
+Use your own Finch instance instead of the default `Supabase.Finch`:
+
+```elixir
+config :supabase_potion, finch_name: MyApp.Finch
+```
+
+When set, no Finch pool is started automatically — you are responsible for starting the named Finch process.
+
+#### `:finch_pool`
+
+Customize the pool configuration for the default `Supabase.Finch` instance:
+
+```elixir
+config :supabase_potion, finch_pool: %{default: [size: 25, count: 4]}
+```
+
+Only takes effect when using the default Finch pool (i.e. neither `:http_client` nor `:finch_name` are set). Defaults to `%{default: [size: 10]}`.

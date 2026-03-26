@@ -1,64 +1,31 @@
 defmodule Supabase.Fetcher.Request do
   @moduledoc """
-  `Supabase.Fetcher.Request` is a structure to handle HTTP request builder designed to interface seamlessly with Supabase services.
+  Composable HTTP request builder for Supabase services.
 
-  ## Key Features
+  This module is primarily used internally by downstream libraries (`supabase_auth`,
+  `supabase_storage`, `supabase_realtime`, etc.) to construct requests. You can also
+  use it directly for full granular control over requests.
 
-  - **Request Composition**: Build requests with method, headers, body, and query parameters using a composable builder pattern.
-  - **Service-Specific Integrations**: Automatically derive URLs for Supabase services like `auth`, `functions`, `storage`, `realtime`, and `database`.
-  - **Customizable Response Handling**: Attach decoders and error parsers tailored to specific service requirements.
-  - **Error Management**: Centralized error handling through `Supabase.ErrorParser`, supporting structured and semantic error reporting.
+  Provides a builder pattern to construct requests with method, headers, body,
+  query params, and service-specific URLs (`:auth`, `:storage`, `:functions`, etc.).
 
-  ## Key Components
+  ## HTTP Client
 
-  ### Request Builder API
+  The underlying HTTP adapter is resolved from application config:
 
-  The `Supabase.Fetcher.Request` provides a composable API for constructing HTTP requests. Each step updates the request builder state:
+      config :supabase_potion, http_client: MyApp.CustomHTTPClient
 
-  - `with_<service>_url/2`: Appends the path to a service-specific base URL, available services can be consulted on `Supabase.services()` typespec.
-  - `with_method/2`: Sets the HTTP method (`:get`, `:post`, etc.).
-  - `with_headers/2`: Appends or overrides headers.
-  - `with_body/2`: Sets the request body, supporting JSON, iodata, or streams.
-  - `with_query/2`: Adds query parameters.
-  - `with_body_decoder/3`: Registers a custom body decoder to be hooked into the response, defaults to `Supabase.Fetcher.JSONDecoder`.
-  - `with_error_parser/2`: Registers a custom error parser to be hooked into the response, defaults to `Supabase.ErrorParser`.
+  Defaults to `Supabase.Fetcher.Adapter.Finch`. Any module implementing the
+  `Supabase.Fetcher.Adapter` behaviour can be used.
 
-  ### Custom HTTP Clients
+  ## Example
 
-  `Supabase.Fetcher.Request` depends on a  `Supabase.Fetcher.Adapter` implementation to dispatch HTTP requests, check `Supabase.Fetcher` module documentation for more info.
-
-  ### Decoders and Parsers
-
-  - **Body Decoder**: Custom modules implementing the `Supabase.Fetcher.BodyDecoder` behaviour can decode response bodies into application-specific formats.
-  - **Error Parser**: Handle service-specific errors using `Supabase.Error` implementations, ensuring consistent error reporting across services.
-
-  ## Example Usage
-
-  ### Basic Request
-
-  ```elixir
-  {:ok, response} =
-    Supabase.Fetcher.new(client)
-    |> Supabase.Fetcher.with_auth_url("/token")
-    |> Supabase.Fetcher.with_method(:post)
-    |> Supabase.Fetcher.with_body(%{username: "test", password: "test"})
-    |> Supabase.Fetcher.request()
-  ```
-
-  ## Custom Decoders and Error Parsers
-
-  ```elixir
-  {:ok, response} =
-    Supabase.Fetcher.new(client)
-    |> Supabase.Fetcher.with_functions_url("/execute")
-    |> Supabase.Fetcher.with_body_decoder(MyCustomDecoder)
-    |> Supabase.Fetcher.with_error_parser(MyErrorParser)
-    |> Supabase.Fetcher.request()
-  ```
-
-  ## Notes
-
-  This module is designed to be extensible and reusable for all Supabase-related services. It abstracts away the low-level HTTP intricacies while providing the flexibility developers need to interact with Supabase services in Elixir applications.
+      {:ok, response} =
+        Supabase.Fetcher.new(client)
+        |> Supabase.Fetcher.with_auth_url("/token")
+        |> Supabase.Fetcher.with_method(:post)
+        |> Supabase.Fetcher.with_body(%{username: "test", password: "test"})
+        |> Supabase.Fetcher.request()
   """
 
   alias Supabase.Client
