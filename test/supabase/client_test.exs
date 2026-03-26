@@ -18,6 +18,7 @@ defmodule Supabase.ClientTest do
       assert client.auth.flow_type == :implicit
       assert client.auth.persist_session == true
       assert client.auth.storage_key == nil
+      assert client.storage.use_new_hostname == false
     end
   end
 

@@ -33,6 +33,9 @@ defmodule Supabase.Client do
           flow_type: :implicit,
           persist_session: true,
           storage_key: "sb-<host>-auth-token"
+        },
+        storage: %Supabase.Client.Storage{
+          use_new_hostname: false
         }
       }
   """
@@ -67,7 +70,8 @@ defmodule Supabase.Client do
           # "public" options
           db: Db.t(),
           global: Global.t(),
-          auth: Auth.t()
+          auth: Auth.t(),
+          storage: Storage.t()
         }
 
   @typedoc """
@@ -79,7 +83,8 @@ defmodule Supabase.Client do
   @type options :: %{
           optional(:db) => Db.params(),
           optional(:global) => Global.params(),
-          optional(:auth) => Auth.params()
+          optional(:auth) => Auth.params(),
+          optional(:storage) => Storage.params()
         }
 
   @deprecated """
@@ -247,6 +252,7 @@ defmodule Supabase.Client do
     embeds_one(:db, Db, defaults_to_struct: true, on_replace: :update)
     embeds_one(:global, Global, defaults_to_struct: true, on_replace: :update)
     embeds_one(:auth, Auth, defaults_to_struct: true, on_replace: :update)
+    embeds_one(:storage, Storage, defaults_to_struct: true, on_replace: :update)
   end
 
   @spec changeset(attrs :: map) :: Ecto.Changeset.t()
@@ -257,6 +263,7 @@ defmodule Supabase.Client do
     |> cast_embed(:db, required: false)
     |> cast_embed(:global, required: false)
     |> cast_embed(:auth, required: false)
+    |> cast_embed(:storage, required: false)
     |> validate_required([:access_token, :base_url, :api_key])
     |> put_change(:auth_url, Path.join(base_url, "auth/v1"))
     |> put_change(:functions_url, Path.join(base_url, "functions/v1"))
