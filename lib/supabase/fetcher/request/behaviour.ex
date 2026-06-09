@@ -11,7 +11,7 @@ defmodule Supabase.Fetcher.Request.Behaviour do
   @callback with_realtime_url(Request.t(), path :: String.t()) :: Request.t()
   @callback with_functions_url(Request.t(), path :: String.t()) :: Request.t()
   @callback with_auth_url(Request.t(), path :: String.t()) :: Request.t()
-  @callback with_http_client(Request.t(), adapter :: module) :: Request.t()
+  @callback with_http_client(Request.t(), adapter :: module, opts :: keyword) :: Request.t()
   @callback with_query(Request.t(), query :: Enumerable.t()) :: Request.t()
   @callback with_body(Request.t(), body) :: Request.t()
             when body: term | {:stream, Enumerable.t()} | nil
