@@ -18,22 +18,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.18
+          - elixir: 1.20
             otp: 28
+          - elixir: 1.20
+            otp: 27
+          - elixir: 1.19
+            otp: 28
+          - elixir: 1.19
+            otp: 27
+          - elixir: 1.19
+            otp: 26
           - elixir: 1.18
             otp: 27
           - elixir: 1.18
             otp: 26
-          - elixir: 1.17
-            otp: 27
-          - elixir: 1.17
-            otp: 26
-          - elixir: 1.17
+          - elixir: 1.18
             otp: 25
-          - elixir: 1.16
-            otp: 25
-          - elixir: 1.16
-            otp: 24
 
     steps:
       - name: Checkout code
@@ -74,7 +74,6 @@ jobs:
         run: mix clean
 
       - name: Check code formatting
-        if: matrix.elixir != '1.16'
         run: mix format --check-formatted
 
       - name: Run Credo
@@ -89,22 +88,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.18
+          - elixir: 1.20
             otp: 28
+          - elixir: 1.20
+            otp: 27
+          - elixir: 1.19
+            otp: 28
+          - elixir: 1.19
+            otp: 27
+          - elixir: 1.19
+            otp: 26
           - elixir: 1.18
             otp: 27
           - elixir: 1.18
             otp: 26
-          - elixir: 1.17
-            otp: 27
-          - elixir: 1.17
-            otp: 26
-          - elixir: 1.17
+          - elixir: 1.18
             otp: 25
-          - elixir: 1.16
-            otp: 25
-          - elixir: 1.16
-            otp: 24
 
     steps:
       - name: Checkout code
@@ -115,7 +114,7 @@ jobs:
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-      
+
       - name: Cache Elixir deps
         uses: actions/cache@v4
         id: deps-cache
@@ -170,22 +169,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.18
+          - elixir: 1.20
             otp: 28
+          - elixir: 1.20
+            otp: 27
+          - elixir: 1.19
+            otp: 28
+          - elixir: 1.19
+            otp: 27
+          - elixir: 1.19
+            otp: 26
           - elixir: 1.18
             otp: 27
           - elixir: 1.18
             otp: 26
-          - elixir: 1.17
-            otp: 27
-          - elixir: 1.17
-            otp: 26
-          - elixir: 1.17
+          - elixir: 1.18
             otp: 25
-          - elixir: 1.16
-            otp: 25
-          - elixir: 1.16
-            otp: 24
 
     steps:
       - name: Checkout code

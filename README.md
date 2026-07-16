@@ -2,7 +2,12 @@
 
 Supabase Community Elixir SDK
 
+## Compatibility
+
+We support the latest 3 stable Elixir versions.
+
 <!-- x-release-please-start-version -->
+
 ```elixir
 def deps do
   [
@@ -15,6 +20,7 @@ def deps do
   ]
 end
 ```
+
 <!-- x-release-please-end -->
 
 Individual product client documentation:
