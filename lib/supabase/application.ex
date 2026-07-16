@@ -3,17 +3,28 @@ defmodule Supabase.Application do
 
   use Application
 
-  @finch_opts [name: Supabase.Finch, pools: %{:default => [size: 10]}]
-
   @impl true
   def start(_start_type, _args) do
     children =
-      [{Finch, @finch_opts}]
+      if start_default_finch?() do
+        [{Finch, name: Supabase.Finch, pools: get_finch_pool()}]
+      else
+        []
+      end
       |> maybe_append_child(fn e -> e == :dev end, SupabasePotion.Client)
 
     opts = [strategy: :one_for_one, name: Supabase.Supervisor]
 
     Supervisor.start_link(children, opts)
+  end
+
+  defp start_default_finch? do
+    is_nil(Application.get_env(:supabase_potion, :http_client)) and
+      is_nil(Application.get_env(:supabase_potion, :finch_name))
+  end
+
+  defp get_finch_pool do
+    Application.get_env(:supabase_potion, :finch_pool, %{default: [size: 10]})
   end
 
   @spec maybe_append_child([child], (env -> boolean()), child) :: [child]
