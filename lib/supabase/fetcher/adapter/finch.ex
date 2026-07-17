@@ -1,5 +1,11 @@
 defmodule Supabase.Fetcher.Adapter.Finch do
-  @moduledoc "HTTP Client backend implementation for `Supabase.Fetcher` using Finch"
+  @moduledoc """
+  HTTP client adapter for `Supabase.Fetcher` using Finch.
+
+  By default uses the `Supabase.Finch` pool. To use your own Finch instance:
+
+      config :supabase_potion, finch_name: MyApp.Finch
+  """
 
   use Supabase.Fetcher.Adapter
 
@@ -9,23 +15,27 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   @impl true
   def request(%Request{method: method, headers: headers} = b, opts \\ []) do
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
     method
     |> Finch.build(url, headers, b.body)
-    |> Finch.request(Supabase.Finch, opts)
+    |> Finch.request(name, opts)
   end
 
   @impl true
   def request_async(%Request{method: method, headers: headers} = b, opts \\ []) do
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
 
     ref =
       method
       |> Finch.build(url, headers, b.body)
-      |> Finch.async_request(Supabase.Finch, opts)
+      |> Finch.async_request(name, opts)
 
     error =
       receive do
@@ -108,9 +118,11 @@ defmodule Supabase.Fetcher.Adapter.Finch do
   defp spawn_stream_task(%Finch.Request{} = req, ref, opts) do
     me = self()
 
+    {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+
     Task.async(fn ->
       on_chunk = fn chunk, _acc -> send(me, {:chunk, chunk, ref}) end
-      Finch.stream(req, Supabase.Finch, nil, on_chunk, opts)
+      Finch.stream(req, name, nil, on_chunk, opts)
       send(me, {:done, ref})
     end)
   end
@@ -143,6 +155,10 @@ defmodule Supabase.Fetcher.Adapter.Finch do
     |> with_body({:stream, body_stream})
     |> with_headers(content_headers)
     |> request(opts)
+  end
+
+  defp finch_name do
+    Application.get_env(:supabase_potion, :finch_name, Supabase.Finch)
   end
 
   defimpl Supabase.Fetcher.ResponseAdapter, for: Finch.Response do

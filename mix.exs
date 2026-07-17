@@ -1,7 +1,7 @@
 defmodule Supabase.MixProject do
   use Mix.Project
 
-  @version "0.7.2"
+  @version "0.8.0"
   @source_url "https://github.com/supabase-community/supabase-ex"
 
   def project do
@@ -32,6 +32,7 @@ defmodule Supabase.MixProject do
   defp deps do
     [
       {:mime, "~> 2.0"},
+      {:multipart, "0.6.1"},
       {:finch, "~> 0.18"},
       {:ecto, "~> 3.10"},
       {:jason, "~> 1.4", optional: true},
