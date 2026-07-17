@@ -6,7 +6,7 @@ Supabase Community Elixir SDK
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 0.7.2"}, # base SDK
+    {:supabase_potion, "~> 0.8.0"}, # base SDK
     {:supabase_storage, "~> 0.4"}, # storage integration
     {:supabase_auth, "~> 0.6"}, # auth integration
     {:supabase_postgrest, "~> 1.0"}, # postgrest integration

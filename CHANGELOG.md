@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.8.0](https://github.com/supabase-community/supabase-ex/compare/v0.7.2...v0.8.0) (2026-07-17)
+
+
+### Features
+
+* allow custom HTTP client and remove managed supervision tree ([#85](https://github.com/supabase-community/supabase-ex/issues/85)) ([e8df2a1](https://github.com/supabase-community/supabase-ex/commit/e8df2a1992105215be83b034369a93a564806181))
+* multipart-support for functions invoking ([#79](https://github.com/supabase-community/supabase-ex/issues/79)) ([ad82846](https://github.com/supabase-community/supabase-ex/commit/ad828464fee286b7ff54c018b1976295d3ab4adc))
+* transform storage url ([#78](https://github.com/supabase-community/supabase-ex/issues/78)) ([41a4dff](https://github.com/supabase-community/supabase-ex/commit/41a4dffa373a4c270001ae52f67a43bd486f5baa))
+
+
+### Bug Fixes
+
+* deprecate self managed clients ([#80](https://github.com/supabase-community/supabase-ex/issues/80)) ([4873120](https://github.com/supabase-community/supabase-ex/commit/4873120b8d292f7dccb90410b9634aa8c01d3640))
+* transform url minor changes ([#86](https://github.com/supabase-community/supabase-ex/issues/86)) ([4090412](https://github.com/supabase-community/supabase-ex/commit/4090412edb8418bfa9d6d9ef2f43f775c9d16370))
+
+
+### Build System
+
+* add release-please version markers to README ([#88](https://github.com/supabase-community/supabase-ex/issues/88)) ([ca21f20](https://github.com/supabase-community/supabase-ex/commit/ca21f2054be4c465d40a23a3b328eaafa0bd481d))
+
+
+### Continuous Integration
+
+* sync downstream library versions from Hex.pm ([#89](https://github.com/supabase-community/supabase-ex/issues/89)) ([639e74b](https://github.com/supabase-community/supabase-ex/commit/639e74b5adaed621fec4dbb6200dac1ba8dd1845))
+
 ## [0.7.2](https://github.com/supabase-community/supabase-ex/compare/v0.7.1...v0.7.2) (2025-11-25)
 
 
