@@ -275,17 +275,10 @@ defmodule Supabase.Client do
   @spec put_storage_url(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp put_storage_url(%Ecto.Changeset{} = changeset) do
     base_url = get_field(changeset, :base_url)
-    storage_config = get_field(changeset, :storage)
 
     if is_binary(base_url) and base_url != "" do
       default_storage_url = Path.join(base_url, "storage/v1")
-
-      storage_url =
-        if storage_config && storage_config.use_new_hostname do
-          Storage.Hostname.transform_storage_url(default_storage_url)
-        else
-          default_storage_url
-        end
+      storage_url = Storage.Hostname.transform_storage_url(default_storage_url)
 
       put_change(changeset, :storage_url, storage_url)
     else
