@@ -5,14 +5,7 @@ defmodule Supabase.Application do
 
   @impl true
   def start(_start_type, _args) do
-    children =
-      if start_default_finch?() do
-        [{Finch, name: Supabase.Finch, pools: get_finch_pool()}]
-      else
-        []
-      end
-      |> maybe_append_child(fn e -> e == :dev end, SupabasePotion.Client)
-
+    children = [{Finch, name: Supabase.Finch, pools: get_finch_pool()}]
     opts = [strategy: :one_for_one, name: Supabase.Supervisor]
 
     Supervisor.start_link(children, opts)
