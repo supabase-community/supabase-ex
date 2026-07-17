@@ -18,21 +18,21 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 28
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 28
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 27
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 25
 
     steps:
@@ -88,21 +88,21 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 28
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 28
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 27
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 25
 
     steps:
@@ -169,21 +169,21 @@ jobs:
     strategy:
       matrix:
         include:
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 28
-          - elixir: 1.20
+          - elixir: '1.20.2'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 28
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 27
-          - elixir: 1.19
+          - elixir: '1.19.5'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 27
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 26
-          - elixir: 1.18
+          - elixir: '1.18.4'
             otp: 25
 
     steps:
