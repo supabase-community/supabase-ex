@@ -1,0 +1,57 @@
+name: Sync downstream versions
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Monday 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch latest versions from Hex.pm
+        id: versions
+        run: |
+          changed=false
+          PACKAGES="supabase_storage supabase_auth supabase_postgrest supabase_functions supabase_realtime"
+
+          for pkg in $PACKAGES; do
+            latest=$(curl -sf "https://hex.pm/api/packages/$pkg" | jq -r '.latest_stable_version // empty')
+
+            if [ -z "$latest" ]; then
+              echo "::warning::Could not fetch version for $pkg — skipping"
+              continue
+            fi
+
+            current=$(grep -oP "(?<=\{:${pkg}, \"~> )[^\"]+" README.md || true)
+
+            if [ -n "$current" ] && [ "$current" != "$latest" ]; then
+              echo "$pkg: $current -> $latest"
+              sed -i "s|\({:${pkg}, \"~> \)[^\"]*|\1${latest}|" README.md
+              changed=true
+            fi
+          done
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update PR
+        if: steps.versions.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/sync-downstream-versions
+          commit-message: "chore: sync downstream library versions in README"
+          title: "chore: sync downstream library versions"
+          body: |
+            Automated update of downstream library versions in the README
+            dependency block. Versions are sourced from [Hex.pm](https://hex.pm).
+
+            > This PR does **not** touch the `supabase_potion` line,
+            > which is managed by release-please.
+          labels: dependencies
+          delete-branch: true

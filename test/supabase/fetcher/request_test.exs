@@ -100,6 +100,38 @@ defmodule Supabase.Fetcher.RequestTest do
 
       assert builder.body == body
     end
+
+    test "encodes {:multipart, parts} into body and content-type header", %{client: client} do
+      parts = [{:field, "album", "trip"}]
+      builder = Request.new(client) |> Request.with_body({:multipart, parts})
+
+      assert IO.iodata_to_binary(builder.body) =~ ~s(name="album")
+      assert get_header(builder.headers, "content-type") =~ "multipart/form-data; boundary="
+    end
+
+    test "encodes {:multipart_stream, parts} into a streamed body", %{client: client} do
+      parts = [{:field, "album", "trip"}]
+      builder = Request.new(client) |> Request.with_body({:multipart_stream, parts})
+
+      assert {:stream, stream} = builder.body
+      assert stream |> Enum.to_list() |> IO.iodata_to_binary() =~ "trip"
+      assert get_header(builder.headers, "content-type") =~ "multipart/form-data; boundary="
+    end
+  end
+
+  describe "with_http_client/3" do
+    test "stores the adapter and its opts", %{client: client} do
+      builder = Request.new(client) |> Request.with_http_client(MyAdapter, name: MyApp.Finch)
+
+      assert builder.http_client == MyAdapter
+      assert builder.http_client_opts == [name: MyApp.Finch]
+    end
+
+    test "defaults opts to an empty list", %{client: client} do
+      builder = Request.new(client) |> Request.with_http_client(MyAdapter)
+
+      assert builder.http_client_opts == []
+    end
   end
 
   describe "with_query/2" do

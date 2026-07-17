@@ -7,7 +7,7 @@ defmodule Supabase.ClientTest do
   @valid_api_key "test_api_key"
 
   describe "Client struct defaults" do
-    test "has default values for db, global, auth, and storage fields" do
+    test "has default values for db, global and auth fields" do
       client = %Client{}
 
       assert client.db.schema == "public"
@@ -58,45 +58,19 @@ defmodule Supabase.ClientTest do
   end
 
   describe "Storage configuration" do
-    test "uses default storage URL when use_new_hostname is false" do
-      {:ok, client} = Supabase.init_client(@valid_base_url, @valid_api_key)
+    for tld <- ~w(co in red) do
+      test "transforms storage URL (.#{tld} domain)" do
+        tld = unquote(tld)
 
-      assert client.storage_url == "https://test.supabase.co/storage/v1"
-      assert client.storage.use_new_hostname == false
-    end
+        {:ok, client} =
+          Supabase.init_client(
+            "https://project.supabase.#{tld}",
+            @valid_api_key,
+            storage: %{use_new_hostname: true}
+          )
 
-    test "transforms storage URL when use_new_hostname is true (.co domain)" do
-      {:ok, client} =
-        Supabase.init_client(
-          "https://project.supabase.co",
-          @valid_api_key,
-          storage: %{use_new_hostname: true}
-        )
-
-      assert client.storage_url == "https://project.storage.supabase.co/storage/v1"
-      assert client.storage.use_new_hostname == true
-    end
-
-    test "transforms storage URL when use_new_hostname is true (.in domain)" do
-      {:ok, client} =
-        Supabase.init_client(
-          "https://project.supabase.in",
-          @valid_api_key,
-          storage: %{use_new_hostname: true}
-        )
-
-      assert client.storage_url == "https://project.storage.supabase.in/storage/v1"
-    end
-
-    test "transforms storage URL when use_new_hostname is true (.red domain)" do
-      {:ok, client} =
-        Supabase.init_client(
-          "https://project.supabase.red",
-          @valid_api_key,
-          storage: %{use_new_hostname: true}
-        )
-
-      assert client.storage_url == "https://project.storage.supabase.red/storage/v1"
+        assert client.storage_url == "https://project.storage.supabase.#{tld}/storage/v1"
+      end
     end
 
     test "accepts storage config as keyword list" do

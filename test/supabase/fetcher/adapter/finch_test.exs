@@ -152,6 +152,45 @@ defmodule Supabase.Fetcher.Adapter.FinchTest do
     end
   end
 
+  describe "custom http client options" do
+    test "forwards http_client_opts to the adapter", %{client: client} do
+      builder =
+        client
+        |> Request.new(decode_body?: true, parse_http_error?: true)
+        |> Request.with_http_client(@mock, name: MyApp.Finch, receive_timeout: 15_000)
+        |> Request.with_method(:get)
+        |> Request.with_database_url("/films")
+
+      @mock
+      |> expect(:request, fn %Request{}, opts ->
+        assert Keyword.get(opts, :name) == MyApp.Finch
+        assert Keyword.get(opts, :receive_timeout) == 15_000
+        {:ok, %Finch.Response{status: 200, headers: [], body: ~s({"data": "ok"})}}
+      end)
+
+      assert {:ok, %Response{status: 200}} = Fetcher.request(builder)
+    end
+
+    test "allows overriding http_client_opts per request", %{client: client} do
+      builder =
+        client
+        |> Request.new(decode_body?: true, parse_http_error?: true)
+        |> Request.with_http_client(@mock, name: MyApp.Finch)
+        |> Request.with_method(:get)
+        |> Request.with_database_url("/films")
+
+      @mock
+      |> expect(:request, fn %Request{}, opts ->
+        assert Keyword.get(opts, :name) == MyApp.Finch
+        assert Keyword.get(opts, :receive_timeout) == 5_000
+        {:ok, %Finch.Response{status: 200, headers: [], body: ~s({"data": "ok"})}}
+      end)
+
+      assert {:ok, %Response{status: 200}} =
+               Fetcher.request(builder, receive_timeout: 5_000)
+    end
+  end
+
   describe "dealing with errors" do
     test "handles network errors", %{builder: builder} do
       @mock

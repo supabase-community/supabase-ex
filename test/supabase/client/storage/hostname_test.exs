@@ -6,34 +6,21 @@ defmodule Supabase.Client.Storage.HostnameTest do
   doctest Supabase.Client.Storage.Hostname
 
   describe "transform_storage_url/1" do
-    test "transforms .supabase.co domain to storage subdomain" do
-      assert Hostname.transform_storage_url("https://abc123.supabase.co/storage/v1") ==
-               "https://abc123.storage.supabase.co/storage/v1"
-    end
+    for {tld, project} <- [{"co", "abc123"}, {"in", "project"}, {"red", "xyz789"}] do
+      test "transforms .supabase.#{tld} domain to storage subdomain" do
+        tld = unquote(tld)
+        project = unquote(project)
 
-    test "transforms .supabase.in domain to storage subdomain" do
-      assert Hostname.transform_storage_url("https://project.supabase.in/storage/v1") ==
-               "https://project.storage.supabase.in/storage/v1"
-    end
+        assert Hostname.transform_storage_url("https://#{project}.supabase.#{tld}/storage/v1") ==
+                 "https://#{project}.storage.supabase.#{tld}/storage/v1"
+      end
 
-    test "transforms .supabase.red domain to storage subdomain" do
-      assert Hostname.transform_storage_url("https://xyz789.supabase.red/storage/v1") ==
-               "https://xyz789.storage.supabase.red/storage/v1"
-    end
-
-    test "skips URLs that already have storage subdomain (.co)" do
-      url = "https://abc123.storage.supabase.co/storage/v1"
-      assert Hostname.transform_storage_url(url) == url
-    end
-
-    test "skips URLs that already have storage subdomain (.in)" do
-      url = "https://project.storage.supabase.in/storage/v1"
-      assert Hostname.transform_storage_url(url) == url
-    end
-
-    test "skips URLs that already have storage subdomain (.red)" do
-      url = "https://xyz.storage.supabase.red/storage/v1"
-      assert Hostname.transform_storage_url(url) == url
+      test "skips URLs that already have storage subdomain (.#{tld})" do
+        tld = unquote(tld)
+        project = unquote(project)
+        url = "https://#{project}.storage.supabase.#{tld}/storage/v1"
+        assert Hostname.transform_storage_url(url) == url
+      end
     end
 
     test "leaves custom domains unchanged" do
@@ -85,22 +72,22 @@ defmodule Supabase.Client.Storage.HostnameTest do
       assert Hostname.transform_storage_url("") == ""
     end
 
-    test "handles URL without path" do
+    test "handles URL different semantics" do
+      # without path
       assert Hostname.transform_storage_url("https://test.supabase.co") ==
                "https://test.storage.supabase.co"
-    end
 
-    test "handles URL with only root path" do
+      # only root path
       assert Hostname.transform_storage_url("https://test.supabase.co/") ==
                "https://test.storage.supabase.co/"
     end
 
-    test "handles subdomain with hyphens" do
-      assert Hostname.transform_storage_url("https://my-project-123.supabase.co/storage/v1") ==
-               "https://my-project-123.storage.supabase.co/storage/v1"
-    end
+    test "handles subdomain alpha-numeric chars" do
+      # with hyphens
+      assert Hostname.transform_storage_url("https://my-project.supabase.co/storage/v1") ==
+               "https://my-project.storage.supabase.co/storage/v1"
 
-    test "handles subdomain with numbers" do
+      # with numbers
       assert Hostname.transform_storage_url("https://123project.supabase.co/storage/v1") ==
                "https://123project.storage.supabase.co/storage/v1"
     end
