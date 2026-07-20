@@ -13,10 +13,10 @@ def deps do
   [
     {:supabase_potion, "~> 1.0.0"}, # base SDK
     {:supabase_storage, "~> 0.4"}, # storage integration
-    {:supabase_auth, "~> 0.6"}, # auth integration
-    {:supabase_postgrest, "~> 1.0"}, # postgrest integration
-    {:supabase_functions, "~> 0.1"}, # edge functions integration
-    {:supabase_realtime, "~> 0.1"}, # realtime integration
+    {:supabase_auth, "~> 1.0.0"}, # auth integration
+    {:supabase_postgrest, "~> 1.2.2"}, # postgrest integration
+    {:supabase_functions, "~> 0.1.0"}, # edge functions integration
+    {:supabase_realtime, "~> 0.5.0"}, # realtime integration
   ]
 end
 ```
