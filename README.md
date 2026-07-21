@@ -11,7 +11,7 @@ We support the latest 3 stable Elixir versions.
 ```elixir
 def deps do
   [
-    {:supabase_potion, "~> 1.0.0"}, # base SDK
+    {:supabase_potion, "~> 1.0.1"}, # base SDK
     {:supabase_storage, "~> 0.4"}, # storage integration
     {:supabase_auth, "~> 0.6"}, # auth integration
     {:supabase_postgrest, "~> 1.0"}, # postgrest integration

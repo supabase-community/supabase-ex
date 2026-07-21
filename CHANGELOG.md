@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.1](https://github.com/supabase-community/supabase-ex/compare/v1.0.0...v1.0.1) (2026-07-21)
+
+
+### Miscellaneous Chores
+
+* remove unused functions ([#92](https://github.com/supabase-community/supabase-ex/issues/92)) ([a591861](https://github.com/supabase-community/supabase-ex/commit/a5918610afc3bf3cebe31f35640311080fd6289c))
+
 ## [1.0.0](https://github.com/supabase-community/supabase-ex/compare/v0.7.2...v1.0.0) (2026-07-17)
 
 
