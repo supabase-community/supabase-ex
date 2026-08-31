@@ -104,7 +104,7 @@ defmodule Supabase do
   end
 
   defp put_default_headers({:ok, %Client{global: g} = client}) do
-    headers = Supabase.Fetcher.merge_headers(g.headers, default_headers())
+    headers = Supabase.Fetcher.merge_headers(default_headers(), g.headers)
     {:ok, put_in(client.global.headers, Map.new(headers))}
   end
 
