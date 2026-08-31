@@ -55,6 +55,70 @@ defmodule Supabase.ClientTest do
       assert %Client{} = client = TestClient.set_auth!(new_access_token)
       assert client.access_token == new_access_token
     end
+
+    test "raises MissingSupabaseConfig when config is absent" do
+      defmodule UnconfiguredClient do
+        use Supabase.Client, otp_app: :supabase_potion
+      end
+
+      assert_raise Supabase.MissingSupabaseConfig, fn ->
+        UnconfiguredClient.get_client!()
+      end
+    end
+
+    test "raises MissingSupabaseConfig when base_url is missing from config" do
+      defmodule NoURLClient do
+        use Supabase.Client, otp_app: :supabase_potion
+      end
+
+      Application.put_env(:supabase_potion, NoURLClient, api_key: "test")
+
+      assert_raise Supabase.MissingSupabaseConfig, fn ->
+        NoURLClient.get_client!()
+      end
+    end
+  end
+
+  describe "changeset/1" do
+    import Supabase.ChangesetHelpers
+
+    test "accepts string-keyed attrs" do
+      attrs = %{
+        "base_url" => @valid_base_url,
+        "api_key" => @valid_api_key,
+        "access_token" => "tok"
+      }
+
+      assert {:ok, client} =
+               attrs
+               |> Client.changeset()
+               |> Ecto.Changeset.apply_action(:parse)
+
+      assert client.base_url == @valid_base_url
+      assert client.api_key == @valid_api_key
+      assert client.access_token == "tok"
+    end
+
+    test "defaults access_token to api_key" do
+      changeset = Client.changeset(%{base_url: @valid_base_url, api_key: @valid_api_key})
+      assert Ecto.Changeset.get_field(changeset, :access_token) == @valid_api_key
+    end
+
+    test "rejects base_url without scheme or host" do
+      for url <- ["localhost:54321", "supabase.co", "ftp://example.com"] do
+        changeset = Client.changeset(%{base_url: url, api_key: @valid_api_key})
+
+        assert %{base_url: ["must be a valid http(s) URL with a host"]} =
+                 errors_on(changeset)
+      end
+    end
+
+    test "accepts http and https URLs" do
+      for url <- ["http://localhost:54321", @valid_base_url] do
+        changeset = Client.changeset(%{base_url: url, api_key: @valid_api_key})
+        assert changeset.valid?
+      end
+    end
   end
 
   describe "Storage configuration" do

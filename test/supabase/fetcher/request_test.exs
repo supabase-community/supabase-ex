@@ -89,9 +89,8 @@ defmodule Supabase.Fetcher.RequestTest do
     test "sets a JSON-encoded body when given a map", %{client: client} do
       body = %{key: "value"}
       builder = Request.new(client) |> Request.with_body(body)
-      json = Supabase.json_library()
 
-      assert builder.body == json.encode_to_iodata!(%{"key" => "value"})
+      assert builder.body == JSON.encode_to_iodata!(%{"key" => "value"})
     end
 
     test "sets raw body when given a binary", %{client: client} do
@@ -148,6 +147,24 @@ defmodule Supabase.Fetcher.RequestTest do
         |> Request.with_query(%{"key2" => "value2"})
 
       assert have_headers?(builder.query, ["key1", "key2"])
+    end
+
+    test "keeps case-distinct query parameters", %{client: client} do
+      builder =
+        Request.new(client)
+        |> Request.with_query(%{"Key" => "value1"})
+        |> Request.with_query(%{"key" => "value2"})
+
+      assert have_headers?(builder.query, ["Key", "key"])
+    end
+
+    test "new values overwrite the same query parameter", %{client: client} do
+      builder =
+        Request.new(client)
+        |> Request.with_query(%{"key" => "old"})
+        |> Request.with_query(%{"key" => "new"})
+
+      assert builder.query == [{"key", "new"}]
     end
   end
 

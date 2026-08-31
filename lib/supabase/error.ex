@@ -78,8 +78,7 @@ defmodule Supabase.Error do
   """
   @spec make_default_http_metadata(Supabase.Fetcher.Request.t()) :: map
   def make_default_http_metadata(%Supabase.Fetcher.Request{} = ctx) do
-    service_key = if service = ctx.service, do: :"#{service}_url"
-    base_url = Map.get(ctx.client, service_key)
+    base_url = service_base_url(ctx)
     path = String.replace(to_string(ctx.url), base_url, "")
     headers = Enum.reject(ctx.headers, &(String.downcase(elem(&1, 0)) == "authorization"))
 
@@ -88,6 +87,12 @@ defmodule Supabase.Error do
       req_body: ctx.body,
       headers: headers
     }
+  end
+
+  defp service_base_url(%{service: nil}), do: ""
+
+  defp service_base_url(%{service: service, client: client}) do
+    Map.get(client, :"#{service}_url") || ""
   end
 
   defimpl Inspect, for: Supabase.Error do

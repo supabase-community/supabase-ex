@@ -137,7 +137,7 @@ defmodule Supabase.Fetcher.Adapter.FinchTest do
       |> expect(:stream, fn %Request{}, on_response, _opts ->
         status = 404
         headers = [{"content-length", 80_543}]
-        stream = Stream.cycle([])
+        stream = Stream.cycle([1])
         on_response.({status, headers, stream})
       end)
 

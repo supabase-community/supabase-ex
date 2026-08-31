@@ -173,7 +173,14 @@ defmodule Supabase.Fetcher.Request do
   @impl true
   def with_query(%__MODULE__{} = builder, query)
       when is_map(query) or is_list(query) do
-    %{builder | query: Fetcher.merge_headers(builder.query, query)}
+    query = if is_map(query), do: Map.to_list(query), else: query
+
+    merged =
+      (query ++ builder.query)
+      |> Enum.reject(fn {_, v} -> is_nil(v) end)
+      |> Enum.uniq_by(fn {name, _} -> name end)
+
+    %{builder | query: merged}
   end
 
   @doc """
@@ -205,8 +212,7 @@ defmodule Supabase.Fetcher.Request do
   end
 
   def with_body(%__MODULE__{} = builder, %{} = body) do
-    json_library = Supabase.json_library()
-    %{builder | body: json_library.encode_to_iodata!(body)}
+    %{builder | body: JSON.encode_to_iodata!(body)}
   end
 
   def with_body(%__MODULE__{} = builder, body) do
