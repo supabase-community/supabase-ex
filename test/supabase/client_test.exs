@@ -55,6 +55,28 @@ defmodule Supabase.ClientTest do
       assert %Client{} = client = TestClient.set_auth!(new_access_token)
       assert client.access_token == new_access_token
     end
+
+    test "raises MissingSupabaseConfig when config is absent" do
+      defmodule UnconfiguredClient do
+        use Supabase.Client, otp_app: :supabase_potion
+      end
+
+      assert_raise Supabase.MissingSupabaseConfig, fn ->
+        UnconfiguredClient.get_client!()
+      end
+    end
+
+    test "raises MissingSupabaseConfig when base_url is missing from config" do
+      defmodule NoURLClient do
+        use Supabase.Client, otp_app: :supabase_potion
+      end
+
+      Application.put_env(:supabase_potion, NoURLClient, api_key: "test")
+
+      assert_raise Supabase.MissingSupabaseConfig, fn ->
+        NoURLClient.get_client!()
+      end
+    end
   end
 
   describe "Storage configuration" do
