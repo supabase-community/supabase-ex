@@ -30,4 +30,35 @@ defmodule Supabase.Fetcher.ResponseTest do
       assert Response.get_header(resp, "content-type", "fallback") == "application/json"
     end
   end
+
+  describe "decode_body/3 with the default JSON decoder" do
+    defp resp(body, headers \\ []) do
+      %Response{status: 200, headers: headers, body: body}
+    end
+
+    test "empty bodies decode to nil" do
+      assert {:ok, %{body: nil}} = Response.decode_body(resp(""))
+      assert {:ok, %{body: nil}} = Response.decode_body(resp(nil))
+    end
+
+    test "decodes JSON bodies" do
+      headers = [{"content-type", "application/json; charset=utf-8"}]
+      assert {:ok, %{body: %{"a" => 1}}} = Response.decode_body(resp(~s({"a":1}), headers))
+    end
+
+    test "passes non-JSON content-type bodies through untouched" do
+      headers = [{"content-type", "text/csv"}]
+      assert {:ok, %{body: "a,b\n1,2"}} = Response.decode_body(resp("a,b\n1,2", headers))
+    end
+
+    test "falls back to raw body when no content-type and not JSON" do
+      assert {:ok, %{body: "plain text"}} = Response.decode_body(resp("plain text"))
+    end
+
+    test "invalid JSON with JSON content-type returns a Supabase.Error" do
+      headers = [{"content-type", "application/json"}]
+      assert {:error, %Supabase.Error{code: :invalid_json_body}} =
+               Response.decode_body(resp("{oops", headers))
+    end
+  end
 end
