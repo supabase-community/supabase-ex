@@ -37,7 +37,7 @@ defmodule Supabase.Fetcher.Adapter.Finch do
     ref =
       method
       |> Finch.build(url, headers, b.body)
-      |> then(&Finch.async_request(name, &1, opts))
+      |> then(&Finch.async_request(&1, name, opts))
 
     collect_async(ref, timeout, %Finch.Response{status: nil, headers: [], body: []})
   end
@@ -134,7 +134,7 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
       case Finch.stream(req, name, nil, on_chunk, opts) do
         {:ok, _} -> send(me, {:stream_done, ref})
-        {:error, error} -> send(me, {:stream_error, ref, error})
+        {:error, error, _acc} -> send(me, {:stream_error, ref, error})
       end
     end)
   end
