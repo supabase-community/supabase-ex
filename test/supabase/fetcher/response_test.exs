@@ -57,6 +57,7 @@ defmodule Supabase.Fetcher.ResponseTest do
 
     test "invalid JSON with JSON content-type returns a Supabase.Error" do
       headers = [{"content-type", "application/json"}]
+
       assert {:error, %Supabase.Error{code: :invalid_json_body}} =
                Response.decode_body(resp("{oops", headers))
     end

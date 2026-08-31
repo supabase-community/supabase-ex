@@ -104,10 +104,17 @@ defmodule Supabase.Fetcher.Adapter.Finch do
   defp handle_stream(status, headers, stream, on_response, b) do
     if is_function(on_response, 1) do
       case on_response.({status, headers, stream}) do
-        :ok -> :ok
-        {:ok, body} -> {:ok, body}
-        {:error, %Supabase.Error{} = err} -> {:error, err}
-        unexpected -> {:error, Supabase.Error.new(service: b.service, metadata: %{raw_error: unexpected})}
+        :ok ->
+          :ok
+
+        {:ok, body} ->
+          {:ok, body}
+
+        {:error, %Supabase.Error{} = err} ->
+          {:error, err}
+
+        unexpected ->
+          {:error, Supabase.Error.new(service: b.service, metadata: %{raw_error: unexpected})}
       end
     else
       body = Enum.to_list(stream) |> IO.iodata_to_binary()

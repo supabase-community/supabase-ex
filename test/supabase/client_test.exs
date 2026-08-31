@@ -83,7 +83,11 @@ defmodule Supabase.ClientTest do
     import Supabase.ChangesetHelpers
 
     test "accepts string-keyed attrs" do
-      attrs = %{"base_url" => @valid_base_url, "api_key" => @valid_api_key, "access_token" => "tok"}
+      attrs = %{
+        "base_url" => @valid_base_url,
+        "api_key" => @valid_api_key,
+        "access_token" => "tok"
+      }
 
       assert {:ok, client} =
                attrs
