@@ -148,6 +148,24 @@ defmodule Supabase.Fetcher.RequestTest do
 
       assert have_headers?(builder.query, ["key1", "key2"])
     end
+
+    test "keeps case-distinct query parameters", %{client: client} do
+      builder =
+        Request.new(client)
+        |> Request.with_query(%{"Key" => "value1"})
+        |> Request.with_query(%{"key" => "value2"})
+
+      assert have_headers?(builder.query, ["Key", "key"])
+    end
+
+    test "new values overwrite the same query parameter", %{client: client} do
+      builder =
+        Request.new(client)
+        |> Request.with_query(%{"key" => "old"})
+        |> Request.with_query(%{"key" => "new"})
+
+      assert builder.query == [{"key", "new"}]
+    end
   end
 
   describe "extensibility with decoders and parsers" do
