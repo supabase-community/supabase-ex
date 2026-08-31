@@ -164,19 +164,22 @@ defmodule Supabase do
     apply(__MODULE__, which, [])
   end
 
-  @json_library Application.compile_env(:supabase_potion, :json_library, Jason)
+  @doc """
+  Returns the JSON library used by Supabase libraries.
 
-  @doc "Returns the configured JSON encoding library for Supabase libraries."
-  @spec json_library :: Poison | Jason | JSON
-  def json_library, do: @json_library
+  Always the native `JSON` module (Elixir 1.18+). Custom JSON libraries are
+  no longer supported.
+  """
+  @spec json_library :: JSON
+  def json_library, do: JSON
 
   @doc false
   def decode_json(term) do
-    json_library().decode(term)
+    JSON.decode(term)
   end
 
   @doc false
   def encode_json(term) do
-    json_library().encode!(term)
+    JSON.encode!(term)
   end
 end

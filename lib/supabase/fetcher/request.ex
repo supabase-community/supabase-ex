@@ -205,8 +205,7 @@ defmodule Supabase.Fetcher.Request do
   end
 
   def with_body(%__MODULE__{} = builder, %{} = body) do
-    json_library = Supabase.json_library()
-    %{builder | body: json_library.encode_to_iodata!(body)}
+    %{builder | body: JSON.encode_to_iodata!(body)}
   end
 
   def with_body(%__MODULE__{} = builder, body) do

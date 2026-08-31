@@ -89,9 +89,8 @@ defmodule Supabase.Fetcher.RequestTest do
     test "sets a JSON-encoded body when given a map", %{client: client} do
       body = %{key: "value"}
       builder = Request.new(client) |> Request.with_body(body)
-      json = Supabase.json_library()
 
-      assert builder.body == json.encode_to_iodata!(%{"key" => "value"})
+      assert builder.body == JSON.encode_to_iodata!(%{"key" => "value"})
     end
 
     test "sets raw body when given a binary", %{client: client} do
