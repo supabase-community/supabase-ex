@@ -131,8 +131,13 @@ defmodule Supabase.Client do
       @impl Supabase.Client.Behaviour
       def get_client! do
         config = Application.get_env(@otp_app, __MODULE__)
-        base_url = Keyword.get(config, :base_url)
-        api_key = Keyword.get(config, :api_key)
+
+        if is_nil(config) do
+          raise MissingSupabaseConfig, key: :config, client: inspect(__MODULE__)
+        end
+
+        base_url = Keyword.get(config, :base_url) || ""
+        api_key = Keyword.get(config, :api_key) || ""
         Supabase.init_client!(base_url, api_key, Map.new(config))
       end
 
