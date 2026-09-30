@@ -211,7 +211,11 @@ defmodule Supabase.Client do
   end
 
   defp put_access_token_fn(changeset, other) do
-    add_error(changeset, :access_token_fn, "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}")
+    add_error(
+      changeset,
+      :access_token_fn,
+      "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}"
+    )
   end
 
   defp maybe_require_access_token(changeset) do
@@ -257,6 +261,31 @@ defmodule Supabase.Client do
 
   def resolve_access_token(%__MODULE__{access_token_fn: {mod, fun, args}}),
     do: apply(mod, fun, args)
+
+  @sb_new_format_prefixes ["sb_publishable_", "sb_secret_"]
+
+  @doc """
+  Returns true when the given key uses the new Supabase API key format
+  (`sb_publishable_...` or `sb_secret_...`).
+
+  New-format keys must be sent only in the `apikey` header, never as
+  `Authorization: Bearer`, matching supabase-js 2.110.x behavior.
+  """
+  @spec new_format_key?(String.t() | nil) :: boolean
+  def new_format_key?(key) when is_binary(key),
+    do: String.starts_with?(key, @sb_new_format_prefixes)
+
+  def new_format_key?(_), do: false
+
+  @doc """
+  Returns true when the given key starts with `sb_` but is not a recognized
+  new-format key (`sb_publishable_` or `sb_secret_`).
+  """
+  @spec unrecognized_sb_key?(String.t() | nil) :: boolean
+  def unrecognized_sb_key?(key) when is_binary(key),
+    do: String.starts_with?(key, "sb_") and not new_format_key?(key)
+
+  def unrecognized_sb_key?(_), do: false
 
   defimpl Inspect, for: Supabase.Client do
     import Inspect.Algebra

@@ -1,6 +1,8 @@
 defmodule Supabase.ClientTest do
   use ExUnit.Case, async: true
 
+  import ExUnit.CaptureLog
+
   alias Supabase.Client
 
   @valid_base_url "https://test.supabase.co"
@@ -86,6 +88,44 @@ defmodule Supabase.ClientTest do
     end
   end
 
+  describe "new-format API keys" do
+    test "new_format_key?/1 recognizes publishable and secret keys" do
+      assert Client.new_format_key?("sb_publishable_abc123")
+      assert Client.new_format_key?("sb_secret_abc123")
+      refute Client.new_format_key?("sb_other_abc123")
+      refute Client.new_format_key?("eyJhbGciOiJIUzI1NiJ9.legacy-jwt")
+      refute Client.new_format_key?(nil)
+    end
+
+    test "unrecognized_sb_key?/1 flags unknown sb_ subtypes only" do
+      assert Client.unrecognized_sb_key?("sb_other_abc123")
+      refute Client.unrecognized_sb_key?("sb_publishable_abc123")
+      refute Client.unrecognized_sb_key?("sb_secret_abc123")
+      refute Client.unrecognized_sb_key?("legacy-anon-key")
+      refute Client.unrecognized_sb_key?(nil)
+    end
+
+    test "warns once per distinct unrecognized sb_ key on init" do
+      log =
+        capture_log([level: :warning], fn ->
+          {:ok, _client} = Supabase.init_client(@valid_base_url, "sb_other_abc123")
+        end)
+
+      assert log =~ "not a recognized new-format key"
+      assert length(String.split(log, "not a recognized new-format key")) == 2
+    end
+
+    test "does not warn for recognized or legacy keys" do
+      log =
+        capture_log([level: :warning], fn ->
+          {:ok, _} = Supabase.init_client(@valid_base_url, "sb_publishable_abc123")
+          {:ok, _} = Supabase.init_client(@valid_base_url, "legacy-anon-key")
+        end)
+
+      refute log =~ "not a recognized new-format key"
+    end
+  end
+
   defp errors_on(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
       Regex.replace(~r"%{(\w+)}", message, fn _, key ->
@@ -93,6 +133,7 @@ defmodule Supabase.ClientTest do
       end)
     end)
   end
+
   defmodule TestClient do
     use Supabase.Client, otp_app: :supabase_potion
   end
