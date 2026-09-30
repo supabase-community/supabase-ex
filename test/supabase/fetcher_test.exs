@@ -69,9 +69,7 @@ defmodule Supabase.FetcherTest do
   describe "db.url_length_limit" do
     test "warns when the request URL exceeds the limit" do
       client =
-        Supabase.init_client!("http://127.0.0.1:54321", "test-api",
-          db: %{url_length_limit: 10}
-        )
+        Supabase.init_client!("http://127.0.0.1:54321", "test-api", db: %{url_length_limit: 10})
 
       stub(Supabase.TestHTTPAdapter, :request, fn _builder, _opts -> {:ok, ok_response()} end)
 
@@ -92,9 +90,7 @@ defmodule Supabase.FetcherTest do
 
     test "does not warn when the limit is disabled" do
       client =
-        Supabase.init_client!("http://127.0.0.1:54321", "test-api",
-          db: %{url_length_limit: nil}
-        )
+        Supabase.init_client!("http://127.0.0.1:54321", "test-api", db: %{url_length_limit: nil})
 
       stub(Supabase.TestHTTPAdapter, :request, fn _builder, _opts -> {:ok, ok_response()} end)
 

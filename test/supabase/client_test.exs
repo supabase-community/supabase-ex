@@ -93,6 +93,7 @@ defmodule Supabase.ClientTest do
       end)
     end)
   end
+
   defmodule TestClient do
     use Supabase.Client, otp_app: :supabase_potion
   end
