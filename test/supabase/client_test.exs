@@ -20,8 +20,79 @@ defmodule Supabase.ClientTest do
       assert client.auth.storage_key == nil
       assert client.storage.use_new_hostname == false
     end
+
+    test "has default values for db request pipeline options" do
+      client = %Client{}
+
+      assert client.db.timeout == nil
+      assert client.db.url_length_limit == 8000
+    end
   end
 
+  def token_fn, do: "mfa-token"
+
+  describe "access_token_fn" do
+    test "accepts a 0-arity function" do
+      {:ok, client} =
+        Supabase.init_client(@valid_base_url, @valid_api_key, %{
+          access_token_fn: fn -> "dynamic-token" end
+        })
+
+      assert Client.resolve_access_token(client) == "dynamic-token"
+    end
+
+    test "accepts an MFA tuple" do
+      {:ok, client} =
+        Supabase.init_client(@valid_base_url, @valid_api_key, %{
+          access_token_fn: {__MODULE__, :token_fn, []}
+        })
+
+      assert Client.resolve_access_token(client) == "mfa-token"
+    end
+
+    test "rejects an invalid access_token_fn" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, %{
+                 access_token_fn: "not-a-function"
+               })
+
+      assert %{access_token_fn: [_ | _]} = errors_on(changeset)
+    end
+
+    test "resolves a static access token when no function is set" do
+      {:ok, client} = Supabase.init_client(@valid_base_url, @valid_api_key)
+
+      assert client.access_token_fn == nil
+      assert Client.resolve_access_token(client) == @valid_api_key
+    end
+  end
+
+  describe "db request pipeline options" do
+    test "casts timeout and url_length_limit" do
+      {:ok, client} =
+        Supabase.init_client(@valid_base_url, @valid_api_key,
+          db: %{timeout: 5_000, url_length_limit: 100}
+        )
+
+      assert client.db.timeout == 5_000
+      assert client.db.url_length_limit == 100
+    end
+
+    test "rejects non-positive timeout" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, db: %{timeout: 0})
+
+      assert %{db: %{timeout: [_ | _]}} = errors_on(changeset)
+    end
+  end
+
+  defp errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
+  end
   defmodule TestClient do
     use Supabase.Client, otp_app: :supabase_potion
   end
