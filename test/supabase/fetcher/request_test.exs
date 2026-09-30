@@ -49,6 +49,24 @@ defmodule Supabase.Fetcher.RequestTest do
       assert get_header(Request.new(client).headers, "authorization") == "Bearer token-0"
       assert get_header(Request.new(client).headers, "authorization") == "Bearer token-1"
     end
+
+    test "omits the authorization header for new-format keys" do
+      for key <- ["sb_publishable_abc123", "sb_secret_abc123"] do
+        client = Supabase.init_client!("http://127.0.0.1:54321", key)
+        builder = Request.new(client)
+
+        refute have_header?(builder.headers, "authorization")
+        assert get_header(builder.headers, "apikey") == key
+      end
+    end
+
+    test "sends the authorization header for legacy keys" do
+      client = Supabase.init_client!("http://127.0.0.1:54321", "sb_other_abc123")
+      builder = Request.new(client)
+
+      assert get_header(builder.headers, "authorization") == "Bearer sb_other_abc123"
+      assert get_header(builder.headers, "apikey") == "sb_other_abc123"
+    end
   end
 
   describe "with_<service>_url/2" do
