@@ -211,7 +211,11 @@ defmodule Supabase.Client do
   end
 
   defp put_access_token_fn(changeset, other) do
-    add_error(changeset, :access_token_fn, "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}")
+    add_error(
+      changeset,
+      :access_token_fn,
+      "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}"
+    )
   end
 
   defp maybe_require_access_token(changeset) do
