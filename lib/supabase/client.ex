@@ -85,6 +85,7 @@ defmodule Supabase.Client do
   @type t :: %__MODULE__{
           base_url: String.t(),
           access_token: String.t(),
+          access_token_fn: access_token_fn | nil,
           api_key: String.t(),
 
           # helper fields
@@ -100,6 +101,13 @@ defmodule Supabase.Client do
           auth: Auth.t(),
           storage: Storage.t()
         }
+
+  @typedoc """
+  A zero-arity function or `{module, function, args}` tuple that returns the
+  access token to use as `Bearer` in requests. Invoked on every request, so
+  short-lived tokens can be refreshed externally (e.g. by a GenServer).
+  """
+  @type access_token_fn :: (-> String.t()) | {module, atom, list}
 
   @typedoc """
   The type for the available additional options that can be passed
@@ -155,6 +163,7 @@ defmodule Supabase.Client do
   embedded_schema do
     field(:api_key, :string)
     field(:access_token, :string)
+    field(:access_token_fn, :any, virtual: true)
     field(:base_url, :string)
 
     field(:realtime_url, :string)
@@ -171,19 +180,50 @@ defmodule Supabase.Client do
 
   @spec changeset(attrs :: map) :: Ecto.Changeset.t()
   def changeset(%{base_url: base_url, api_key: api_key} = attrs) do
+    {access_token_fn, attrs} = Map.pop(attrs, :access_token_fn)
+
     %__MODULE__{}
     |> cast(attrs, [:api_key, :base_url, :access_token])
+    |> put_access_token_fn(access_token_fn)
     |> put_change(:access_token, attrs[:access_token] || api_key)
     |> cast_embed(:db, required: false)
     |> cast_embed(:global, required: false)
     |> cast_embed(:auth, required: false)
     |> cast_embed(:storage, required: false)
-    |> validate_required([:access_token, :base_url, :api_key])
+    |> validate_required([:base_url, :api_key])
+    |> maybe_require_access_token()
     |> put_change(:auth_url, Path.join(base_url, "auth/v1"))
     |> put_change(:functions_url, Path.join(base_url, "functions/v1"))
     |> put_change(:database_url, Path.join(base_url, "rest/v1"))
     |> put_storage_url()
     |> put_change(:realtime_url, Path.join(base_url, "realtime/v1"))
+  end
+
+  defp put_access_token_fn(changeset, nil), do: changeset
+
+  defp put_access_token_fn(changeset, fun) when is_function(fun, 0) do
+    put_change(changeset, :access_token_fn, fun)
+  end
+
+  defp put_access_token_fn(changeset, {mod, fun, args})
+       when is_atom(mod) and is_atom(fun) and is_list(args) do
+    put_change(changeset, :access_token_fn, {mod, fun, args})
+  end
+
+  defp put_access_token_fn(changeset, other) do
+    add_error(
+      changeset,
+      :access_token_fn,
+      "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}"
+    )
+  end
+
+  defp maybe_require_access_token(changeset) do
+    if get_field(changeset, :access_token_fn) do
+      changeset
+    else
+      validate_required(changeset, [:access_token])
+    end
   end
 
   @spec put_storage_url(Ecto.Changeset.t()) :: Ecto.Changeset.t()
@@ -208,6 +248,19 @@ defmodule Supabase.Client do
   def update_access_token(%__MODULE__{} = client, access_token) do
     %{client | access_token: access_token}
   end
+
+  @doc """
+  Resolves the access token to be used as `Bearer` in requests.
+
+  When `access_token_fn` is set (a 0-arity function or MFA tuple), it is
+  invoked on each call, otherwise the static `access_token` is returned.
+  """
+  @spec resolve_access_token(t) :: String.t() | nil
+  def resolve_access_token(%__MODULE__{access_token_fn: nil, access_token: token}), do: token
+  def resolve_access_token(%__MODULE__{access_token_fn: fun}) when is_function(fun, 0), do: fun.()
+
+  def resolve_access_token(%__MODULE__{access_token_fn: {mod, fun, args}}),
+    do: apply(mod, fun, args)
 
   defimpl Inspect, for: Supabase.Client do
     import Inspect.Algebra

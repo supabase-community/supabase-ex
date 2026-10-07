@@ -79,7 +79,7 @@ defmodule Supabase.Fetcher.Request do
   def new(%Client{global: global} = client, opts \\ []) when is_list(opts) do
     headers =
       global.headers
-      |> Map.put("authorization", "Bearer " <> client.access_token)
+      |> Map.put("authorization", "Bearer " <> Client.resolve_access_token(client))
       |> Map.put("apikey", client.api_key)
       |> Map.to_list()
 
