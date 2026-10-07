@@ -45,6 +45,8 @@ defmodule Supabase do
 
   alias Supabase.MissingSupabaseConfig
 
+  require Logger
+
   @typedoc "Helper typespec to define general success and error returns"
   @type result(a) :: {:ok, a} | {:error, Supabase.Error.t()}
 
@@ -86,7 +88,25 @@ defmodule Supabase do
     |> Ecto.Changeset.apply_action(:parse)
     |> then(&maybe_put_storage_key/1)
     |> then(&put_default_headers/1)
+    |> then(&warn_unrecognized_sb_keys/1)
   end
+
+  defp warn_unrecognized_sb_keys({:ok, %Client{} = client} = result) do
+    [api_key: client.api_key, access_token: client.access_token]
+    |> Enum.uniq_by(fn {_field, key} -> key end)
+    |> Enum.each(fn {field, key} ->
+      if Client.unrecognized_sb_key?(key) do
+        Logger.warning(
+          "[#{__MODULE__}]: the #{field} starts with \"sb_\" but is not a recognized " <>
+            "new-format key (sb_publishable_ or sb_secret_). It will be sent as a legacy key."
+        )
+      end
+    end)
+
+    result
+  end
+
+  defp warn_unrecognized_sb_keys(result), do: result
 
   defp maybe_put_storage_key({:ok, %Client{base_url: base_url} = client}) do
     maybe_default = &(Function.identity(&1) || default_storage_key(base_url))
