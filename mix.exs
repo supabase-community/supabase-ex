@@ -35,7 +35,6 @@ defmodule Supabase.MixProject do
       {:multipart, "0.6.1"},
       {:finch, "~> 0.18"},
       {:ecto, "~> 3.10"},
-      {:jason, "~> 1.4", optional: true},
       {:mox, "~> 1.2", only: :test},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

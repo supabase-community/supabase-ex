@@ -104,7 +104,7 @@ defmodule Supabase do
   end
 
   defp put_default_headers({:ok, %Client{global: g} = client}) do
-    headers = Supabase.Fetcher.merge_headers(g.headers, default_headers())
+    headers = Supabase.Fetcher.merge_headers(default_headers(), g.headers)
     {:ok, put_in(client.global.headers, Map.new(headers))}
   end
 
@@ -160,23 +160,22 @@ defmodule Supabase do
     end)
   end
 
-  defmacro __using__(which) when is_atom(which) do
-    apply(__MODULE__, which, [])
-  end
+  @doc """
+  Returns the JSON library used by Supabase libraries.
 
-  @json_library Application.compile_env(:supabase_potion, :json_library, Jason)
-
-  @doc "Returns the configured JSON encoding library for Supabase libraries."
-  @spec json_library :: Poison | Jason | JSON
-  def json_library, do: @json_library
+  Always the native `JSON` module (Elixir 1.18+). Custom JSON libraries are
+  no longer supported.
+  """
+  @spec json_library :: JSON
+  def json_library, do: JSON
 
   @doc false
   def decode_json(term) do
-    json_library().decode(term)
+    JSON.decode(term)
   end
 
   @doc false
   def encode_json(term) do
-    json_library().encode!(term)
+    JSON.encode!(term)
   end
 end

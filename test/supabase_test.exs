@@ -26,6 +26,16 @@ defmodule SupabaseTest do
       assert client.auth.storage_key == "test-key"
       assert client.db.schema == "custom"
     end
+
+    test "user-supplied global headers take precedence over defaults" do
+      assert {:ok, %Client{} = client} =
+               Supabase.init_client("https://test.supabase.co", "test",
+                 global: [headers: %{"x-client-info" => "my-app/1.0"}]
+               )
+
+      assert client.global.headers["x-client-info"] == "my-app/1.0"
+      assert client.global.headers["user-agent"] =~ "SupabasePotion/"
+    end
   end
 
   describe "init_client!/1" do

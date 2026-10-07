@@ -131,8 +131,13 @@ defmodule Supabase.Client do
       @impl Supabase.Client.Behaviour
       def get_client! do
         config = Application.get_env(@otp_app, __MODULE__)
-        base_url = Keyword.get(config, :base_url)
-        api_key = Keyword.get(config, :api_key)
+
+        if is_nil(config) do
+          raise MissingSupabaseConfig, key: :config, client: inspect(__MODULE__)
+        end
+
+        base_url = Keyword.get(config, :base_url) || ""
+        api_key = Keyword.get(config, :api_key) || ""
         Supabase.init_client!(base_url, api_key, Map.new(config))
       end
 
@@ -170,20 +175,54 @@ defmodule Supabase.Client do
   end
 
   @spec changeset(attrs :: map) :: Ecto.Changeset.t()
-  def changeset(%{base_url: base_url, api_key: api_key} = attrs) do
+  def changeset(attrs) when is_map(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:api_key, :base_url, :access_token])
-    |> put_change(:access_token, attrs[:access_token] || api_key)
+    |> put_default_access_token()
     |> cast_embed(:db, required: false)
     |> cast_embed(:global, required: false)
     |> cast_embed(:auth, required: false)
     |> cast_embed(:storage, required: false)
     |> validate_required([:access_token, :base_url, :api_key])
-    |> put_change(:auth_url, Path.join(base_url, "auth/v1"))
-    |> put_change(:functions_url, Path.join(base_url, "functions/v1"))
-    |> put_change(:database_url, Path.join(base_url, "rest/v1"))
-    |> put_storage_url()
-    |> put_change(:realtime_url, Path.join(base_url, "realtime/v1"))
+    |> validate_base_url()
+    |> put_service_urls()
+  end
+
+  defp put_default_access_token(%Ecto.Changeset{} = changeset) do
+    case get_field(changeset, :access_token) do
+      token when token in [nil, ""] ->
+        put_change(changeset, :access_token, get_field(changeset, :api_key))
+
+      _token ->
+        changeset
+    end
+  end
+
+  defp validate_base_url(%Ecto.Changeset{} = changeset) do
+    validate_change(changeset, :base_url, fn :base_url, url ->
+      uri = URI.parse(url)
+
+      if uri.scheme in ["http", "https"] and is_binary(uri.host) and uri.host != "" do
+        []
+      else
+        [base_url: "must be a valid http(s) URL with a host"]
+      end
+    end)
+  end
+
+  defp put_service_urls(%Ecto.Changeset{} = changeset) do
+    case get_field(changeset, :base_url) do
+      base_url when is_binary(base_url) and base_url != "" ->
+        changeset
+        |> put_change(:auth_url, Path.join(base_url, "auth/v1"))
+        |> put_change(:functions_url, Path.join(base_url, "functions/v1"))
+        |> put_change(:database_url, Path.join(base_url, "rest/v1"))
+        |> put_storage_url()
+        |> put_change(:realtime_url, Path.join(base_url, "realtime/v1"))
+
+      _ ->
+        changeset
+    end
   end
 
   @spec put_storage_url(Ecto.Changeset.t()) :: Ecto.Changeset.t()
