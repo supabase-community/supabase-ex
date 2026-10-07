@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.1](https://github.com/supabase-community/supabase-ex/compare/v1.0.0...v1.0.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **ci:** include otp and elixir versions in deps cache key ([#94](https://github.com/supabase-community/supabase-ex/issues/94)) ([bd2345a](https://github.com/supabase-community/supabase-ex/commit/bd2345a764320296129486ed255ad7edfc3493f8))
+
+
+### Miscellaneous Chores
+
+* remove unused functions ([#92](https://github.com/supabase-community/supabase-ex/issues/92)) ([a591861](https://github.com/supabase-community/supabase-ex/commit/a5918610afc3bf3cebe31f35640311080fd6289c))
+* sync downstream library versions ([#96](https://github.com/supabase-community/supabase-ex/issues/96)) ([201f1d7](https://github.com/supabase-community/supabase-ex/commit/201f1d7210e0376e86c7811f1b70d33a01d8a2d8))
+
 ## [1.0.0](https://github.com/supabase-community/supabase-ex/compare/v0.7.2...v1.0.0) (2026-07-17)
 
 
