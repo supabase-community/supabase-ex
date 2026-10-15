@@ -79,12 +79,22 @@ defmodule Supabase.Fetcher.Request do
   def new(%Client{global: global} = client, opts \\ []) when is_list(opts) do
     headers =
       global.headers
-      |> Map.put("authorization", "Bearer " <> Client.resolve_access_token(client))
       |> Map.put("apikey", client.api_key)
+      |> maybe_put_authorization(Client.resolve_access_token(client))
       |> Map.to_list()
 
     %__MODULE__{client: client, headers: headers, http_client: get_http_adapter()}
     |> Map.update!(:options, &Keyword.merge(&1, opts))
+  end
+
+  # New-format keys (sb_publishable_/sb_secret_) are sent only in the
+  # `apikey` header, never as `Authorization: Bearer` (supabase-js 2.110.x).
+  defp maybe_put_authorization(headers, token) do
+    if is_binary(token) and not Client.new_format_key?(token) do
+      Map.put(headers, "authorization", "Bearer " <> token)
+    else
+      headers
+    end
   end
 
   defp get_http_adapter do
