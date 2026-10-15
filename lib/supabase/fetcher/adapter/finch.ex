@@ -11,7 +11,8 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
   import Supabase.Fetcher.Request, only: [with_body: 2, with_headers: 2]
 
-  alias Supabase.Fetcher
+  # Matches Finch's own default receive timeout.
+  @default_receive_timeout 15_000
 
   @impl true
   def request(%Request{method: method, headers: headers} = b, opts \\ []) do
@@ -28,6 +29,7 @@ defmodule Supabase.Fetcher.Adapter.Finch do
   @impl true
   def request_async(%Request{method: method, headers: headers} = b, opts \\ []) do
     {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
+    {timeout, opts} = Keyword.pop(opts, :receive_timeout, @default_receive_timeout)
 
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
@@ -35,84 +37,91 @@ defmodule Supabase.Fetcher.Adapter.Finch do
     ref =
       method
       |> Finch.build(url, headers, b.body)
-      |> Finch.async_request(name, opts)
+      |> then(&Finch.async_request(&1, name, opts))
 
-    error =
-      receive do
-        {^ref, {:error, err}} -> err
-      after
-        300 -> nil
-      end
+    collect_async(ref, timeout, %Finch.Response{status: nil, headers: [], body: []})
+  end
 
-    if is_nil(error) do
-      status = receive(do: ({^ref, {:status, status}} -> status))
-      headers = receive(do: ({^ref, {:headers, headers}} -> headers))
+  defp collect_async(ref, timeout, acc) do
+    receive do
+      {^ref, {:status, status}} ->
+        collect_async(ref, timeout, %{acc | status: status})
 
-      stream =
-        Stream.resource(
-          fn -> ref end,
-          fn ref ->
-            receive do
-              {^ref, {:data, chunk}} -> {[chunk], ref}
-              {^ref, :done} -> {:halt, ref}
-            end
-          end,
-          &Function.identity/1
-        )
+      {^ref, {:headers, headers}} ->
+        collect_async(ref, timeout, %{acc | headers: headers})
 
-      body = Enum.to_list(stream) |> Enum.join()
+      {^ref, {:data, chunk}} ->
+        collect_async(ref, timeout, %{acc | body: [chunk | acc.body]})
 
-      headers =
-        receive do
-          {^ref, {:headers, final_headers}} -> Fetcher.merge_headers(headers, final_headers)
-        after
-          300 -> headers
-        end
+      {^ref, :done} ->
+        body = acc.body |> Enum.reverse() |> IO.iodata_to_binary()
+        {:ok, %{acc | body: body}}
 
-      {:ok, %Finch.Response{body: body, headers: headers, status: status}}
-    else
-      {:error, error}
+      {^ref, {:error, error}} ->
+        {:error, error}
+    after
+      timeout -> {:error, %Mint.TransportError{reason: :timeout}}
     end
   end
 
   @impl true
   def stream(%Request{method: method, headers: headers} = b, on_response \\ nil, opts \\ []) do
+    {timeout, opts} = Keyword.pop(opts, :receive_timeout, @default_receive_timeout)
+
     query = URI.encode_query(b.query)
     url = URI.append_query(b.url, query)
     req = Finch.build(method, url, headers, b.body)
     ref = make_ref()
-    task = spawn_stream_task(req, ref, opts)
-    status = receive(do: ({:chunk, {:status, status}, ^ref} -> status))
-    headers = receive(do: ({:chunk, {:headers, headers}, ^ref} -> headers))
+    {pid, mref} = spawn_stream_task(req, ref, opts)
 
-    stream =
-      Stream.resource(fn -> {ref, task} end, &receive_stream(&1), fn {_ref, task} ->
-        Task.shutdown(task)
-      end)
+    with {:ok, status} <- await_stream_head(ref, pid, mref, :status, timeout),
+         {:ok, headers} <- await_stream_head(ref, pid, mref, :headers, timeout) do
+      stream =
+        Stream.resource(
+          fn -> {ref, pid, mref, timeout} end,
+          &receive_stream/1,
+          fn {_, pid, mref, _} -> shutdown_stream_task(pid, mref) end
+        )
 
-    headers =
-      receive do
-        {:chunk, {:headers, final_headers}, ^ref} ->
-          Fetcher.merge_headers(headers, final_headers)
-      after
-        300 -> headers
-      end
+      handle_stream(status, headers, stream, on_response, b)
+    else
+      {:error, error} ->
+        shutdown_stream_task(pid, mref)
+        {:error, error}
+    end
+  end
 
+  defp await_stream_head(ref, pid, mref, kind, timeout) do
+    receive do
+      {:chunk, {^kind, value}, ^ref} -> {:ok, value}
+      {:stream_error, ^ref, error} -> {:error, error}
+      {:DOWN, ^mref, :process, ^pid, reason} -> {:error, reason}
+    after
+      timeout -> {:error, %Mint.TransportError{reason: :timeout}}
+    end
+  end
+
+  defp handle_stream(status, headers, stream, on_response, b) do
     if is_function(on_response, 1) do
       case on_response.({status, headers, stream}) do
-        :ok -> :ok
-        {:ok, body} -> {:ok, body}
-        {:error, %Supabase.Error{} = err} -> {:error, err}
-        unexpected -> Supabase.Error.new(service: b.service, metadata: %{raw_error: unexpected})
+        :ok ->
+          :ok
+
+        {:ok, body} ->
+          {:ok, body}
+
+        {:error, %Supabase.Error{} = err} ->
+          {:error, err}
+
+        unexpected ->
+          {:error, Supabase.Error.new(service: b.service, metadata: %{raw_error: unexpected})}
       end
     else
-      %Finch.Response{
-        status: status,
-        body: Enum.to_list(stream) |> Enum.join(),
-        headers: headers
-      }
-      |> then(&{:ok, &1})
+      body = Enum.to_list(stream) |> IO.iodata_to_binary()
+      {:ok, %Finch.Response{status: status, body: body, headers: headers}}
     end
+  catch
+    {:stream_error, error} -> {:error, error}
   end
 
   defp spawn_stream_task(%Finch.Request{} = req, ref, opts) do
@@ -120,18 +129,31 @@ defmodule Supabase.Fetcher.Adapter.Finch do
 
     {name, opts} = Keyword.pop_lazy(opts, :name, fn -> finch_name() end)
 
-    Task.async(fn ->
+    spawn_monitor(fn ->
       on_chunk = fn chunk, _acc -> send(me, {:chunk, chunk, ref}) end
-      Finch.stream(req, name, nil, on_chunk, opts)
-      send(me, {:done, ref})
+
+      case Finch.stream(req, name, nil, on_chunk, opts) do
+        {:ok, _} -> send(me, {:stream_done, ref})
+        {:error, error, _acc} -> send(me, {:stream_error, ref, error})
+      end
     end)
   end
 
-  defp receive_stream({ref, _task} = payload) do
+  defp receive_stream({ref, pid, mref, timeout} = acc) do
     receive do
-      {:chunk, {:data, data}, ^ref} -> {[data], payload}
-      {:done, ^ref} -> {:halt, payload}
+      {:chunk, {:data, data}, ^ref} -> {[data], acc}
+      {:stream_done, ^ref} -> {:halt, acc}
+      {:stream_error, ^ref, error} -> throw({:stream_error, error})
+      {:DOWN, ^mref, :process, ^pid, reason} -> throw({:stream_error, reason})
+    after
+      timeout -> throw({:stream_error, %Mint.TransportError{reason: :timeout}})
     end
+  end
+
+  defp shutdown_stream_task(pid, mref) do
+    Process.demonitor(mref, [:flush])
+    if Process.alive?(pid), do: Process.exit(pid, :kill)
+    :ok
   end
 
   @impl true
