@@ -103,11 +103,11 @@ defmodule Supabase.Client do
         }
 
   @typedoc """
-  A zero-arity function or `{module, function, args}` tuple that returns the
-  access token to use as `Bearer` in requests. Invoked on every request, so
-  short-lived tokens can be refreshed externally (e.g. by a GenServer).
+  A `{module, function, args}` tuple that returns the access token to use as
+  `Bearer` in requests. Invoked on every request, so short-lived tokens can be
+  refreshed externally (e.g. by a GenServer).
   """
-  @type access_token_fn :: (-> String.t()) | {module, atom, list}
+  @type access_token_fn :: {module, atom, list}
 
   @typedoc """
   The type for the available additional options that can be passed
@@ -201,10 +201,6 @@ defmodule Supabase.Client do
 
   defp put_access_token_fn(changeset, nil), do: changeset
 
-  defp put_access_token_fn(changeset, fun) when is_function(fun, 0) do
-    put_change(changeset, :access_token_fn, fun)
-  end
-
   defp put_access_token_fn(changeset, {mod, fun, args})
        when is_atom(mod) and is_atom(fun) and is_list(args) do
     put_change(changeset, :access_token_fn, {mod, fun, args})
@@ -214,7 +210,7 @@ defmodule Supabase.Client do
     add_error(
       changeset,
       :access_token_fn,
-      "must be a 0-arity function or an MFA tuple, got: #{inspect(other)}"
+      "must be an MFA tuple, got: #{inspect(other)}"
     )
   end
 
@@ -252,12 +248,11 @@ defmodule Supabase.Client do
   @doc """
   Resolves the access token to be used as `Bearer` in requests.
 
-  When `access_token_fn` is set (a 0-arity function or MFA tuple), it is
-  invoked on each call, otherwise the static `access_token` is returned.
+  When `access_token_fn` is set (an MFA tuple), it is invoked on each call,
+  otherwise the static `access_token` is returned.
   """
   @spec resolve_access_token(t) :: String.t() | nil
   def resolve_access_token(%__MODULE__{access_token_fn: nil, access_token: token}), do: token
-  def resolve_access_token(%__MODULE__{access_token_fn: fun}) when is_function(fun, 0), do: fun.()
 
   def resolve_access_token(%__MODULE__{access_token_fn: {mod, fun, args}}),
     do: apply(mod, fun, args)

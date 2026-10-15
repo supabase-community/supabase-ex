@@ -250,30 +250,12 @@ defmodule Supabase.Fetcher do
 
   @spec apply_client_opts(Request.t(), keyword) :: keyword
   defp apply_client_opts(%Request{} = builder, opts) do
-    maybe_warn_url_length(builder)
-
     opts = builder.http_client_opts ++ opts
 
     case builder.client.db.timeout do
       nil -> opts
       timeout -> Keyword.put_new(opts, :receive_timeout, timeout)
     end
-  end
-
-  @spec maybe_warn_url_length(Request.t()) :: :ok
-  defp maybe_warn_url_length(%Request{} = builder) do
-    limit = builder.client.db.url_length_limit
-
-    with true <- is_integer(limit),
-         url <- to_string(URI.append_query(builder.url, URI.encode_query(builder.query))),
-         true <- String.length(url) > limit do
-      Logger.warning(
-        "[#{__MODULE__}]: request URL length (#{String.length(url)}) exceeds the configured " <>
-          "db.url_length_limit of #{limit} characters, PostgREST may reject it: #{url}"
-      )
-    end
-
-    :ok
   end
 
   @spec handle_response({:ok, response} | {:error, term}, context) :: Supabase.result(response)

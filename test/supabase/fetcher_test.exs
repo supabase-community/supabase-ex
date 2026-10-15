@@ -1,7 +1,6 @@
 defmodule Supabase.FetcherTest do
   use ExUnit.Case, async: false
 
-  import ExUnit.CaptureLog
   import Mox
 
   alias Supabase.Fetcher
@@ -63,40 +62,6 @@ defmodule Supabase.FetcherTest do
       end)
 
       assert {:ok, _} = Fetcher.request(build(client))
-    end
-  end
-
-  describe "db.url_length_limit" do
-    test "warns when the request URL exceeds the limit" do
-      client =
-        Supabase.init_client!("http://127.0.0.1:54321", "test-api", db: %{url_length_limit: 10})
-
-      stub(Supabase.TestHTTPAdapter, :request, fn _builder, _opts -> {:ok, ok_response()} end)
-
-      log = capture_log([level: :warning], fn -> Fetcher.request(build(client)) end)
-
-      assert log =~ "url_length_limit"
-    end
-
-    test "does not warn when the URL fits the limit" do
-      client = Supabase.init_client!("http://127.0.0.1:54321", "test-api")
-
-      stub(Supabase.TestHTTPAdapter, :request, fn _builder, _opts -> {:ok, ok_response()} end)
-
-      log = capture_log([level: :warning], fn -> Fetcher.request(build(client)) end)
-
-      refute log =~ "url_length_limit"
-    end
-
-    test "does not warn when the limit is disabled" do
-      client =
-        Supabase.init_client!("http://127.0.0.1:54321", "test-api", db: %{url_length_limit: nil})
-
-      stub(Supabase.TestHTTPAdapter, :request, fn _builder, _opts -> {:ok, ok_response()} end)
-
-      log = capture_log([level: :warning], fn -> Fetcher.request(build(client)) end)
-
-      refute log =~ "url_length_limit"
     end
   end
 end

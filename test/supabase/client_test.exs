@@ -25,22 +25,12 @@ defmodule Supabase.ClientTest do
       client = %Client{}
 
       assert client.db.timeout == nil
-      assert client.db.url_length_limit == 8000
     end
   end
 
   def token_fn, do: "mfa-token"
 
   describe "access_token_fn" do
-    test "accepts a 0-arity function" do
-      {:ok, client} =
-        Supabase.init_client(@valid_base_url, @valid_api_key, %{
-          access_token_fn: fn -> "dynamic-token" end
-        })
-
-      assert Client.resolve_access_token(client) == "dynamic-token"
-    end
-
     test "accepts an MFA tuple" do
       {:ok, client} =
         Supabase.init_client(@valid_base_url, @valid_api_key, %{
@@ -48,6 +38,15 @@ defmodule Supabase.ClientTest do
         })
 
       assert Client.resolve_access_token(client) == "mfa-token"
+    end
+
+    test "rejects a bare 0-arity function" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, %{
+                 access_token_fn: fn -> "dynamic-token" end
+               })
+
+      assert %{access_token_fn: [_ | _]} = errors_on(changeset)
     end
 
     test "rejects an invalid access_token_fn" do
@@ -68,14 +67,11 @@ defmodule Supabase.ClientTest do
   end
 
   describe "db request pipeline options" do
-    test "casts timeout and url_length_limit" do
+    test "casts timeout" do
       {:ok, client} =
-        Supabase.init_client(@valid_base_url, @valid_api_key,
-          db: %{timeout: 5_000, url_length_limit: 100}
-        )
+        Supabase.init_client(@valid_base_url, @valid_api_key, db: %{timeout: 5_000})
 
       assert client.db.timeout == 5_000
-      assert client.db.url_length_limit == 100
     end
 
     test "rejects non-positive timeout" do

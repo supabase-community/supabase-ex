@@ -28,7 +28,7 @@ defmodule Supabase.Fetcher.RequestTest do
     test "resolves an access_token_fn into the authorization header" do
       client =
         Supabase.init_client!("http://127.0.0.1:54321", "test-api", %{
-          access_token_fn: fn -> "fresh-token" end
+          access_token_fn: {__MODULE__, :fresh_token, []}
         })
 
       builder = Request.new(client)
@@ -41,9 +41,7 @@ defmodule Supabase.Fetcher.RequestTest do
 
       client =
         Supabase.init_client!("http://127.0.0.1:54321", "test-api", %{
-          access_token_fn: fn ->
-            Agent.get_and_update(agent, fn n -> {"token-#{n}", n + 1} end)
-          end
+          access_token_fn: {__MODULE__, :next_token, [agent]}
         })
 
       assert get_header(Request.new(client).headers, "authorization") == "Bearer token-0"
@@ -333,6 +331,10 @@ defmodule Supabase.Fetcher.RequestTest do
       assert Request.get_header(updated_fetcher, "key1") == "value1"
     end
   end
+
+  def fresh_token, do: "fresh-token"
+
+  def next_token(agent), do: Agent.get_and_update(agent, fn n -> {"token-#{n}", n + 1} end)
 
   defp have_header?(headers, name) do
     Enum.any?(headers, fn {k, _} ->
