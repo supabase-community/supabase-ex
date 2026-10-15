@@ -280,7 +280,7 @@ defmodule Supabase.Fetcher do
     metadata = Map.merge(metadata, err.metadata)
 
     {:error,
-     %{err | metadata: metadata}
+     %{err | service: err.service || builder.service, metadata: metadata}
      |> tap(
        &Logger.error("""
        [#{__MODULE__}]: Error response while processing request. #{inspect(&1)}

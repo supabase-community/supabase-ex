@@ -34,11 +34,15 @@ defmodule Supabase.Fetcher.Response do
 
   @doc """
   Helper function to get a specific header value from a response.
+
+  Header lookup is case-insensitive, per RFC 9110.
   """
   @spec get_header(t, String.t()) :: String.t() | nil
   @spec get_header(t, String.t(), String.t()) :: String.t() | nil
   def get_header(%__MODULE__{headers: headers}, header) do
-    if h = Enum.find(headers, &(elem(&1, 0) == header)) do
+    downcased = String.downcase(header)
+
+    if h = Enum.find(headers, &(String.downcase(elem(&1, 0)) == downcased)) do
       elem(h, 1)
     else
       nil
