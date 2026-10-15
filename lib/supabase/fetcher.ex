@@ -156,7 +156,7 @@ defmodule Supabase.Fetcher do
   @impl true
   def request(%Request{http_client: http_client} = builder, opts \\ [])
       when not is_nil(builder.url) do
-    opts = builder.http_client_opts ++ opts
+    opts = apply_client_opts(builder, opts)
 
     with {:ok, resp} <- http_client.request(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
@@ -184,7 +184,7 @@ defmodule Supabase.Fetcher do
   @impl true
   def request_async(%Request{http_client: http_client} = builder, opts \\ [])
       when not is_nil(builder.url) do
-    opts = builder.http_client_opts ++ opts
+    opts = apply_client_opts(builder, opts)
 
     with {:ok, resp} <- http_client.request_async(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
@@ -214,7 +214,7 @@ defmodule Supabase.Fetcher do
 
   def stream(%Request{http_client: http_client} = builder, nil, opts)
       when not is_nil(builder.url) do
-    opts = builder.http_client_opts ++ opts
+    opts = apply_client_opts(builder, opts)
 
     with {:ok, resp} <- http_client.stream(builder, opts) do
       {:ok, ResponseAdapter.from(resp)}
@@ -226,7 +226,7 @@ defmodule Supabase.Fetcher do
 
   def stream(%Request{http_client: http_client} = builder, on_response, opts)
       when not is_nil(builder.url) do
-    opts = builder.http_client_opts ++ opts
+    opts = apply_client_opts(builder, opts)
     http_client.stream(builder, on_response, opts)
   rescue
     exception -> handle_exception(exception, __STACKTRACE__, builder)
@@ -238,7 +238,7 @@ defmodule Supabase.Fetcher do
   @impl true
   def upload(%Request{http_client: http_client} = builder, file, opts \\ [])
       when not is_nil(builder.url) do
-    opts = builder.http_client_opts ++ opts
+    opts = apply_client_opts(builder, opts)
 
     with {:ok, resp} <- http_client.upload(builder, file, opts) do
       {:ok, ResponseAdapter.from(resp)}
@@ -246,6 +246,16 @@ defmodule Supabase.Fetcher do
     |> handle_response(builder)
   rescue
     exception -> handle_exception(exception, __STACKTRACE__, builder)
+  end
+
+  @spec apply_client_opts(Request.t(), keyword) :: keyword
+  defp apply_client_opts(%Request{} = builder, opts) do
+    opts = builder.http_client_opts ++ opts
+
+    case builder.client.db.timeout do
+      nil -> opts
+      timeout -> Keyword.put_new(opts, :receive_timeout, timeout)
+    end
   end
 
   @spec handle_response({:ok, response} | {:error, term}, context) :: Supabase.result(response)

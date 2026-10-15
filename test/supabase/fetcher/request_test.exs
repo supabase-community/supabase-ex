@@ -18,6 +18,35 @@ defmodule Supabase.Fetcher.RequestTest do
       assert builder.method == :get
       refute builder.url
     end
+
+    test "resolves a static access token into the authorization header", %{client: client} do
+      builder = Request.new(client)
+
+      assert get_header(builder.headers, "authorization") == "Bearer test-api"
+    end
+
+    test "resolves an access_token_fn into the authorization header" do
+      client =
+        Supabase.init_client!("http://127.0.0.1:54321", "test-api", %{
+          access_token_fn: {__MODULE__, :fresh_token, []}
+        })
+
+      builder = Request.new(client)
+
+      assert get_header(builder.headers, "authorization") == "Bearer fresh-token"
+    end
+
+    test "invokes the access_token_fn on each request build" do
+      {:ok, agent} = Agent.start_link(fn -> 0 end)
+
+      client =
+        Supabase.init_client!("http://127.0.0.1:54321", "test-api", %{
+          access_token_fn: {__MODULE__, :next_token, [agent]}
+        })
+
+      assert get_header(Request.new(client).headers, "authorization") == "Bearer token-0"
+      assert get_header(Request.new(client).headers, "authorization") == "Bearer token-1"
+    end
   end
 
   describe "with_<service>_url/2" do
@@ -302,6 +331,10 @@ defmodule Supabase.Fetcher.RequestTest do
       assert Request.get_header(updated_fetcher, "key1") == "value1"
     end
   end
+
+  def fresh_token, do: "fresh-token"
+
+  def next_token(agent), do: Agent.get_and_update(agent, fn n -> {"token-#{n}", n + 1} end)
 
   defp have_header?(headers, name) do
     Enum.any?(headers, fn {k, _} ->
