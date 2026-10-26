@@ -20,6 +20,74 @@ defmodule Supabase.ClientTest do
       assert client.auth.storage_key == nil
       assert client.storage.use_new_hostname == false
     end
+
+    test "has default values for db request pipeline options" do
+      client = %Client{}
+
+      assert client.db.timeout == nil
+    end
+  end
+
+  def token_fn, do: "mfa-token"
+
+  describe "access_token_fn" do
+    test "accepts an MFA tuple" do
+      {:ok, client} =
+        Supabase.init_client(@valid_base_url, @valid_api_key, %{
+          access_token_fn: {__MODULE__, :token_fn, []}
+        })
+
+      assert Client.resolve_access_token(client) == "mfa-token"
+    end
+
+    test "rejects a bare 0-arity function" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, %{
+                 access_token_fn: fn -> "dynamic-token" end
+               })
+
+      assert %{access_token_fn: [_ | _]} = errors_on(changeset)
+    end
+
+    test "rejects an invalid access_token_fn" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, %{
+                 access_token_fn: "not-a-function"
+               })
+
+      assert %{access_token_fn: [_ | _]} = errors_on(changeset)
+    end
+
+    test "resolves a static access token when no function is set" do
+      {:ok, client} = Supabase.init_client(@valid_base_url, @valid_api_key)
+
+      assert client.access_token_fn == nil
+      assert Client.resolve_access_token(client) == @valid_api_key
+    end
+  end
+
+  describe "db request pipeline options" do
+    test "casts timeout" do
+      {:ok, client} =
+        Supabase.init_client(@valid_base_url, @valid_api_key, db: %{timeout: 5_000})
+
+      assert client.db.timeout == 5_000
+    end
+
+    test "rejects non-positive timeout" do
+      assert {:error, changeset} =
+               Supabase.init_client(@valid_base_url, @valid_api_key, db: %{timeout: 0})
+
+      assert %{db: %{timeout: [_ | _]}} = errors_on(changeset)
+    end
+  end
+
+  defp errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
   end
 
   defmodule TestClient do

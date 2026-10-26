@@ -112,7 +112,8 @@ defmodule Supabase do
 
   defp default_headers do
     %{
-      "x-client-info" => "supabase-fetch-elixir/#{version()}",
+      "x-client-info" =>
+        "supabase-potion/#{version()}; runtime=elixir; runtime-version=#{System.version()}",
       "user-agent" => "SupabasePotion/#{version()}"
     }
   end
